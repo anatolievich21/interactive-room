@@ -8,12 +8,26 @@ interface LoadingScreenProps {
 }
 
 export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
-    const progressBarRef = useRef<HTMLDivElement>(null)
-    const textRef = useRef<HTMLDivElement>(null)
+    const barRef = useRef<HTMLDivElement>(null)
+    const textRef = useRef<HTMLParagraphElement>(null)
 
     useEffect(() => {
-        if (progressBarRef.current) {
-            gsap.to(progressBarRef.current, {
+        const tl = gsap.timeline()
+
+        tl.fromTo('.loading-bar-container',
+            { opacity: 0, scaleX: 0 },
+            { opacity: 1, scaleX: 1, duration: 0.8, ease: 'power2.out' }
+        )
+            .fromTo(textRef.current,
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' },
+                '-=0.3'
+            )
+    }, [])
+
+    useEffect(() => {
+        if (progress > 0) {
+            gsap.to(barRef.current, {
                 width: `${progress}%`,
                 duration: 0.3,
                 ease: 'power2.out'
@@ -23,39 +37,33 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
 
     useEffect(() => {
         if (progress >= 100) {
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    setTimeout(onComplete, 500)
-                }
-            })
+            const tl = gsap.timeline()
 
-            tl.to(textRef.current, {
+            tl.to([barRef.current, textRef.current], {
                 opacity: 0,
-                y: -20,
-                duration: 0.5
+                y: -30,
+                duration: 0.8,
+                ease: 'power2.in',
+                stagger: 0.1
             })
-                .to(progressBarRef.current, {
-                    scaleY: 0,
-                    duration: 0.3,
-                    ease: 'power2.in'
-                }, '-=0.2')
+                .to('.loading-screen', {
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: 'power2.in',
+                    onComplete
+                })
         }
     }, [progress, onComplete])
 
     return (
         <div className="loading-screen">
             <div className="loading-content">
-                <h1 className="loading-title">Loading...</h1>
                 <div className="loading-bar-container">
-                    <div
-                        ref={progressBarRef}
-                        className="loading-bar"
-                        style={{ width: '0%' }}
-                    />
+                    <div ref={barRef} className="loading-bar"></div>
                 </div>
-                <div ref={textRef} className="loading-text">
-                    Preparing your journey...
-                </div>
+                <p ref={textRef} className="loading-text">
+                    Preparing your immersive experience... {progress}%
+                </p>
             </div>
         </div>
     )
