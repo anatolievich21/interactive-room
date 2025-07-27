@@ -107,6 +107,47 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
         }
     }, [isVisible])
 
+    const handleClose = useCallback(() => {
+        if (isAnimating) return
+
+        setIsAnimating(true)
+        gsap.to(containerRef.current, {
+            scale: 0,
+            y: 20,
+            rotation: 5,
+            duration: 0.3,
+            ease: 'power2.in',
+            onComplete: () => {
+                setIsAnimating(false)
+                containerRef.current?.classList.remove('visible')
+                onClose()
+                setCurrentStep(0)
+                setIsMounted(false)
+            }
+        })
+    }, [onClose, isAnimating])
+
+    const handleSkip = useCallback(() => {
+        if (isAnimating) return
+        if (!containerRef.current) return
+
+        setIsAnimating(true)
+        gsap.to(containerRef.current, {
+            scale: 0,
+            y: 20,
+            rotation: 5,
+            duration: 0.3,
+            ease: 'power2.in',
+            onComplete: () => {
+                setIsAnimating(false)
+                containerRef.current?.classList.remove('visible')
+                onClose()
+                setCurrentStep(0)
+                setIsMounted(false)
+            }
+        })
+    }, [onClose, isAnimating])
+
     const handleNext = useCallback(() => {
         if (currentStep < 4) {
             setIsAnimating(true)
@@ -134,7 +175,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
         } else {
             handleClose()
         }
-    }, [currentStep])
+    }, [currentStep, handleClose])
 
     const handlePrev = useCallback(() => {
         if (currentStep > 0) {
@@ -163,48 +204,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
         }
     }, [currentStep])
 
-    const handleClose = useCallback(() => {
-        if (isAnimating) return
-
-        setIsAnimating(true)
-        gsap.to(containerRef.current, {
-            scale: 0,
-            y: 20,
-            rotation: 5,
-            duration: 0.3,
-            ease: 'power2.in',
-            onComplete: () => {
-                setIsAnimating(false)
-                containerRef.current?.classList.remove('visible')
-                onClose()
-                setCurrentStep(0)
-                setIsMounted(false)
-            }
-        })
-    }, [onClose])
-
-    const handleSkip = useCallback(() => {
-        if (isAnimating) return
-        if (!containerRef.current) return
-
-        setIsAnimating(true)
-        gsap.to(containerRef.current, {
-            scale: 0,
-            y: 20,
-            rotation: 5,
-            duration: 0.3,
-            ease: 'power2.in',
-            onComplete: () => {
-                setIsAnimating(false)
-                containerRef.current?.classList.remove('visible')
-                onClose()
-                setCurrentStep(0)
-                setIsMounted(false)
-            }
-        })
-    }, [onClose])
-
-    const currentInstruction = useMemo(() => instructions[currentStep], [currentStep])
+    const currentInstruction = useMemo(() => instructions[currentStep], [currentStep, instructions])
     const isFirstStep = useMemo(() => currentStep === 0, [currentStep])
     const isLastStep = useMemo(() => currentStep === 4, [currentStep])
 

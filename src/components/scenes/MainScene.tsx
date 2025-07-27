@@ -2,12 +2,12 @@ import { useEffect, useRef, useCallback, useState, useLayoutEffect, useMemo } fr
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { NavigationMap, SceneNavigation } from '../interactive'
-import { InstructionsModal } from '../interactive/modals/InstructionsModal'
-import { VideoHighlights } from '../interactive/highlights/VideoHighlights'
-import { ObjectModal } from '../interactive/modals/ObjectModal'
-import { EditModeIndicators } from '../interactive/indicators/EditModeIndicators'
-import { objectData } from '../interactive/data/objectData'
-import type { ObjectInfo } from '../interactive/data/objectData'
+import { InstructionsModal } from '../interactive'
+import { VideoHighlights } from '../interactive'
+import { ObjectModal } from '../interactive'
+import { EditModeIndicators } from '../interactive'
+import { objectData } from '../interactive'
+import type { ObjectInfo } from '../interactive'
 
 import './MainScene.css'
 
@@ -93,8 +93,7 @@ export function MainScene() {
                 start: 'top top',
                 end: 'bottom bottom',
                 scrub: 1,
-                onUpdate: (self) => {
-                    const progress = self.progress
+                onUpdate: ({ progress }) => {
                     setScrollProgress(progress)
                     const duration = video.duration || 0
 
@@ -156,7 +155,7 @@ export function MainScene() {
         setTimeout(() => {
             setIsNavigating(false)
             setNavigationTarget(null)
-        }, 1000)
+        }, 800)
     }, [isNavigating])
 
     const handleInstructionsClose = useCallback(() => {

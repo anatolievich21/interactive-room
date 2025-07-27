@@ -21,8 +21,7 @@ export const highlightStorage = {
         try {
             const saved = localStorage.getItem(STORAGE_KEY)
             if (saved) {
-                const positions = JSON.parse(saved)
-                return positions
+                return JSON.parse(saved)
             }
         } catch (error) {
             console.error('Failed to load highlight positions:', error)

@@ -26,7 +26,7 @@ export function SceneNavigation({ onNavigate, currentProgress }: SceneNavigation
                 setCurrentIndex(activeIndex)
             }
         }
-    }, [activePoint, currentIndex])
+    }, [activePoint, currentIndex, navigationPoints])
 
     useEffect(() => {
         gsap.set(leftArrowRef.current, { x: -50, opacity: 0, scale: 0.8 })
@@ -132,4 +132,3 @@ export function SceneNavigation({ onNavigate, currentProgress }: SceneNavigation
     )
 }
 
-export default SceneNavigation 

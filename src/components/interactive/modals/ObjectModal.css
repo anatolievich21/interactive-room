@@ -23,33 +23,51 @@
     position: relative;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.object-modal.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-close {
     position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 16px;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+    padding: 10px 18px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
     z-index: 10;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 0.3px;
 }
 
 .modal-close:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
     color: white;
-    transform: scale(1.1);
+    transform: translateY(-1px);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.modal-close:active {
+    transform: translateY(0);
 }
 
 .modal-content {

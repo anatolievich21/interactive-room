@@ -222,7 +222,6 @@
 }
 
 .nav-button:hover:not(.disabled) {
-    background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.4);
     transform: translateY(-2px);
     box-shadow:
@@ -241,7 +240,6 @@
 }
 
 .nav-button.primary {
-    background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.5),
@@ -249,7 +247,6 @@
 }
 
 .nav-button.primary:hover {
-    background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-2px);
     box-shadow:

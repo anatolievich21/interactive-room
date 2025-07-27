@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import './ButtonBase.css'
 import './EditModeToggle.css'
 
 interface EditModeToggleProps {
@@ -13,7 +14,7 @@ export function EditModeToggle({ isEditMode, onToggle }: EditModeToggleProps) {
 
     return (
         <button
-            className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+            className={`button-base edit-mode-toggle ${isEditMode ? 'active' : ''}`}
             onClick={handleToggle}
             title={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
         >

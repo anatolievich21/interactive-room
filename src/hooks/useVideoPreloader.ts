@@ -30,6 +30,25 @@ export function useVideoPreloader(resourceConfig: ResourceConfig) {
         let loadedCount = 0
         const totalResources = resourceConfig.videos.length + resourceConfig.images.length + resourceConfig.css.length
 
+        const handleResourceLoaded = (url: string) => {
+            loadedCount++
+            const progress = (loadedCount / totalResources) * 100
+
+            setState(prev => ({
+                ...prev,
+                progress,
+                loadedResources: [...prev.loadedResources, url]
+            }))
+
+            if (loadedCount === totalResources) {
+                setState(prev => ({
+                    ...prev,
+                    isLoading: false,
+                    isReady: true
+                }))
+            }
+        }
+
         const preloadVideo = (url: string): Promise<void> => {
             return new Promise((resolve) => {
                 const video = document.createElement('video')
@@ -37,44 +56,12 @@ export function useVideoPreloader(resourceConfig: ResourceConfig) {
                 video.muted = true
 
                 video.oncanplaythrough = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 
                 video.onerror = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 
@@ -87,44 +74,12 @@ export function useVideoPreloader(resourceConfig: ResourceConfig) {
                 const img = new Image()
 
                 img.onload = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 
                 img.onerror = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 
@@ -139,44 +94,12 @@ export function useVideoPreloader(resourceConfig: ResourceConfig) {
                 link.href = url
 
                 link.onload = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 
                 link.onerror = () => {
-                    loadedCount++
-                    const progress = (loadedCount / totalResources) * 100
-
-                    setState(prev => ({
-                        ...prev,
-                        progress,
-                        loadedResources: [...prev.loadedResources, url]
-                    }))
-
-                    if (loadedCount === totalResources) {
-                        setState(prev => ({
-                            ...prev,
-                            isLoading: false,
-                            isReady: true
-                        }))
-                    }
-
+                    handleResourceLoaded(url)
                     resolve()
                 }
 

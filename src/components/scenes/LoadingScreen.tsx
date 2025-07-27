@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import './LoadingScreen.css'
+import backgroundImage from '/images/start-scene-blur.png'
 
 interface LoadingScreenProps {
     progress: number
@@ -78,7 +79,10 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
     }, [displayProgress, onComplete])
 
     return (
-        <div className="loading-screen">
+        <div
+            className="loading-screen"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
             <div className="loading-content">
                 <div className="loading-bar-container">
                     <div ref={barRef} className="loading-bar"></div>

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import './ButtonBase.css'
 import './HelpButton.css'
 
 interface HelpButtonProps {
@@ -12,7 +13,7 @@ export function HelpButton({ onClick }: HelpButtonProps) {
 
     return (
         <button
-            className="help-button"
+            className="button-base help-button"
             onClick={handleClick}
             aria-label="Show help"
             title="Help"
