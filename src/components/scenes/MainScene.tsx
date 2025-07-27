@@ -1,13 +1,14 @@
 import { useEffect, useRef, useCallback, useState, useLayoutEffect, useMemo } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { NavigationMap } from '../interactive/NavigationMap'
+import { NavigationMap } from '../interactive/navigation/NavigationMap'
 import SceneNavigation from '../interactive/SceneNavigation'
-import { InstructionsModal } from '../interactive/InstructionsModal'
-import { VideoHighlights } from '../interactive/VideoHighlights'
-import { ObjectModal } from '../interactive/ObjectModal'
-import { objectData } from '../interactive/objectData'
-import type { ObjectInfo } from '../interactive/objectData'
+import { InstructionsModal } from '../interactive/modals/InstructionsModal'
+import { VideoHighlights } from '../interactive/highlights/VideoHighlights'
+import { ObjectModal } from '../interactive/modals/ObjectModal'
+import { EditModeIndicators } from '../interactive/indicators/EditModeIndicators'
+import { objectData } from '../interactive/data/objectData'
+import type { ObjectInfo } from '../interactive/data/objectData'
 import './MainScene.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -21,6 +22,7 @@ export function MainScene() {
     const [hasShownInitialHelp, setHasShownInitialHelp] = useState(false)
     const [showObjectModal, setShowObjectModal] = useState(false)
     const [selectedObject, setSelectedObject] = useState<ObjectInfo | null>(null)
+    const [isEditMode, setIsEditMode] = useState(false)
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -165,6 +167,10 @@ export function MainScene() {
         setSelectedObject(null)
     }, [])
 
+    const handleEditModeToggle = useCallback((editMode: boolean) => {
+        setIsEditMode(editMode)
+    }, [])
+
     useEffect(() => {
         if (!hasShownInitialHelp) {
             const timer = setTimeout(() => {
@@ -194,13 +200,17 @@ export function MainScene() {
             <VideoHighlights
                 currentProgress={scrollProgress}
                 onObjectClick={handleObjectClick}
+                isEditMode={isEditMode}
             />
 
+            <EditModeIndicators isEditMode={isEditMode} />
 
             <NavigationMap
                 onNavigate={handleNavigate}
                 currentProgress={scrollProgress}
                 onHelpClick={handleHelpClick}
+                isEditMode={isEditMode}
+                onEditModeToggle={handleEditModeToggle}
             />
 
             <SceneNavigation

@@ -126,6 +126,54 @@
     }
 }
 
+/* Стилі для режиму редагування */
+.video-highlight.edit-mode {
+    cursor: grab !important;
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.video-highlight.edit-mode:active {
+    cursor: grabbing !important;
+    border-color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.highlight-edit-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 3;
+}
+
+/* Індикатор перетягування */
+.video-highlight.edit-mode:hover::after {
+    content: 'Drag to move';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
 /* Адаптивність для мобільних пристроїв */
 @media (max-width: 768px) {
     .highlight-icon {
@@ -145,6 +193,12 @@
     .highlight-pulse-ring::before {
         width: 45px;
         height: 45px;
+    }
+
+    .highlight-edit-indicator {
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
     }
 }
 
@@ -166,5 +220,11 @@
     .highlight-pulse-ring::before {
         width: 35px;
         height: 35px;
+    }
+
+    .highlight-edit-indicator {
+        width: 14px;
+        height: 14px;
+        font-size: 7px;
     }
 }

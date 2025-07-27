@@ -38,6 +38,12 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
             description: "Move your mouse over the video to experience realistic camera movements and depth.",
             icon: "🖱️",
             details: "Hover anywhere on the video for parallax effects"
+        },
+        {
+            title: "Customize Highlights",
+            description: "Want to adjust highlight positions? Use edit mode to drag and reposition them exactly where you want.",
+            icon: "✏️",
+            details: "Click the edit icon (✏️) next to the help button"
         }
     ], [])
 
@@ -98,7 +104,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
     }, [isAutoShow])
 
     const handleNext = useCallback(() => {
-        if (currentStep < 3) {
+        if (currentStep < 4) {
             setIsAnimating(true)
             gsap.to(contentRef.current, {
                 opacity: 0,
@@ -192,7 +198,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
 
     const currentInstruction = useMemo(() => instructions[currentStep], [currentStep])
     const isFirstStep = useMemo(() => currentStep === 0, [currentStep])
-    const isLastStep = useMemo(() => currentStep === 3, [currentStep])
+    const isLastStep = useMemo(() => currentStep === 4, [currentStep])
 
     if (!isVisible) return null
 

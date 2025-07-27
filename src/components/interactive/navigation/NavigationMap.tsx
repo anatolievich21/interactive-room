@@ -1,67 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { EditModeToggle } from '../buttons/EditModeToggle'
+import { HelpButton } from '../buttons/HelpButton'
+import { BurgerButton } from '../buttons/BurgerButton'
+import { navigationPoints, type NavigationPoint } from '../data/navigationData'
 import './NavigationMap.css'
-
-interface NavigationPoint {
-    id: string
-    name: string
-    icon: string
-    scrollPosition: number
-    description: string
-    highlightRange: {
-        start: number
-        end: number
-    }
-}
-
-const navigationPoints: NavigationPoint[] = [
-    {
-        id: 'sofa',
-        name: 'Sofa',
-        icon: '🛋️',
-        scrollPosition: 0.03, // середина діапазону 1-5%
-        description: 'Comfort zone',
-        highlightRange: { start: 0.01, end: 0.05 }
-    },
-    {
-        id: 'fireplace',
-        name: 'Fireplace',
-        icon: '🔥',
-        scrollPosition: 0.175, // середина діапазону 15-20%
-        description: 'Warm and cozy',
-        highlightRange: { start: 0.15, end: 0.20 }
-    },
-    {
-        id: 'tv',
-        name: 'TV',
-        icon: '📺',
-        scrollPosition: 0.35, // середина діапазону 30-40%
-        description: 'Entertainment hub',
-        highlightRange: { start: 0.30, end: 0.40 }
-    },
-    {
-        id: 'bookshelf',
-        name: 'Bookshelf',
-        icon: '📚',
-        scrollPosition: 0.625, // середина діапазону 60-65%
-        description: 'Knowledge corner',
-        highlightRange: { start: 0.60, end: 0.65 }
-    }
-]
 
 interface NavigationMapProps {
     onNavigate: (scrollPosition: number) => void
     currentProgress: number
     onHelpClick?: () => void
+    isEditMode?: boolean
+    onEditModeToggle?: (isEditMode: boolean) => void
 }
 
-export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: NavigationMapProps) {
+export function NavigationMap({
+    onNavigate,
+    currentProgress,
+    onHelpClick,
+    isEditMode = false,
+    onEditModeToggle
+}: NavigationMapProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
     const toggleRef = useRef<HTMLButtonElement>(null)
     const pointsRef = useRef<HTMLDivElement>(null)
 
-    // Визначаємо активний об'єкт на основі поточного прогресу
     const activePoint = navigationPoints.find(point =>
         currentProgress >= point.highlightRange.start &&
         currentProgress <= point.highlightRange.end
@@ -92,64 +56,61 @@ export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: Navi
     }
 
     useEffect(() => {
-        if (isExpanded && pointsRef.current) {
+        if (pointsRef.current) {
             const points = pointsRef.current.querySelectorAll('.navigation-point')
-            const header = pointsRef.current.querySelector('.navigation-header h3')
             const closeButton = pointsRef.current.querySelector('.close-button')
 
-            gsap.set(points, { x: 40, opacity: 0, scale: 0.9 })
-            gsap.set(header, { opacity: 0, y: -10 })
-            gsap.set(closeButton, { opacity: 0, scale: 0.8 })
+            if (isExpanded) {
+                gsap.set(pointsRef.current, {
+                    opacity: 0,
+                    scale: 0.95,
+                    y: -10
+                })
 
-            const tl = gsap.timeline()
+                const tl = gsap.timeline()
 
-            tl.to(header, {
-                opacity: 1,
-                y: 0,
-                duration: 0.2,
-                ease: "power2.out"
-            })
-                .to(closeButton, {
+                tl.to(pointsRef.current, {
                     opacity: 1,
                     scale: 1,
+                    y: 0,
                     duration: 0.2,
-                    ease: "back.out(1.7)"
-                }, '-=0.1')
-                .to(points, {
-                    x: 0,
-                    opacity: 1,
-                    scale: 1,
-                    duration: 0.3,
-                    stagger: 0.03,
-                    ease: "back.out(1.4)"
-                }, '-=0.05')
+                    ease: "power2.out"
+                })
+                    .to(closeButton, {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.2,
+                        ease: "back.out(1.7)"
+                    }, '-=0.1')
+                    .to(points, {
+                        x: 0,
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.3,
+                        stagger: 0.03,
+                        ease: "back.out(1.4)"
+                    }, '-=0.05')
+            }
         }
     }, [isExpanded])
 
     return (
         <div className={`navigation-map ${isExpanded ? 'expanded' : ''}`}>
             <div className="navigation-controls">
-                <button
-                    className="help-button"
-                    onClick={onHelpClick}
-                    aria-label="Show help"
-                    title="Help"
-                >
-                    ?
-                </button>
+                <HelpButton onClick={onHelpClick} />
 
-                <button
+                {onEditModeToggle && (
+                    <EditModeToggle
+                        isEditMode={isEditMode}
+                        onToggle={onEditModeToggle}
+                    />
+                )}
+
+                <BurgerButton
                     ref={toggleRef}
-                    className="navigation-toggle"
                     onClick={toggleExpanded}
-                    aria-label="Toggle navigation map"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+                    isExpanded={isExpanded}
+                />
             </div>
 
             {isExpanded && (
