@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LoadingScreen } from './components/LoadingScreen'
 import { StartScene } from './components/StartScene'
+import { MainScene } from './components/MainScene'
 import { useVideoPreloader } from './hooks/useVideoPreloader'
 import './App.css'
 
@@ -37,12 +38,7 @@ function App() {
     )
   }
 
-  return (
-    <div className="App">
-      <h1>Cinematic Interface</h1>
-      <p>Main scene will be here!</p>
-    </div>
-  )
+  return <MainScene />
 }
 
 export default App
