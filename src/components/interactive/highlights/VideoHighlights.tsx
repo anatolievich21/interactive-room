@@ -45,13 +45,19 @@ export function VideoHighlights({
     const containerRectRef = useRef<DOMRect | null>(null)
 
     useEffect(() => {
-        const updatedHighlights = defaultHighlights.map(highlight => {
-            const savedPosition = highlightStorage.getPosition(highlight.id)
-            return savedPosition
-                ? { ...highlight, position: savedPosition }
-                : highlight
-        })
-        setVideoHighlights(updatedHighlights)
+        const savedPositions = highlightStorage.loadPositions()
+
+        if (savedPositions.length > 0) {
+            const updatedHighlights = defaultHighlights.map(highlight => {
+                const savedPosition = savedPositions.find(p => p.id === highlight.id)
+                return savedPosition
+                    ? { ...highlight, position: savedPosition.position }
+                    : highlight
+            })
+            setVideoHighlights(updatedHighlights)
+        } else {
+            setVideoHighlights(defaultHighlights)
+        }
     }, [defaultHighlights])
 
     const handleMouseDown = useCallback((e: React.MouseEvent, highlightId: string) => {
@@ -135,192 +141,171 @@ export function VideoHighlights({
     useEffect(() => {
         if (!highlightsRef.current) return
 
-        const ctx = gsap.context(() => {
-            videoHighlights.forEach(highlight => {
-                let isInRange = currentProgress >= highlight.highlightRange.start &&
-                    currentProgress <= highlight.highlightRange.end
+        videoHighlights.forEach(highlight => {
+            let isInRange = currentProgress >= highlight.highlightRange.start &&
+                currentProgress <= highlight.highlightRange.end
 
-                if (isNavigating && navigationTarget !== null) {
-                    const targetPoint = navigationPoints.find(point =>
-                        Math.abs(navigationTarget - point.scrollPosition) < 0.01
-                    )
-                    isInRange = targetPoint?.id === highlight.id
-                }
+            if (isNavigating && navigationTarget !== null) {
+                const targetPoint = navigationPoints.find(point =>
+                    Math.abs(navigationTarget - point.scrollPosition) < 0.01
+                )
+                isInRange = targetPoint?.id === highlight.id
+            }
 
-                let highlightElement = highlightsMap.current.get(highlight.id)
+            let highlightElement = highlightsMap.current.get(highlight.id)
 
-                if (isNavigating && !isInRange && highlightElement) {
-                    gsap.to(highlightElement, {
-                        opacity: 0,
-                        scale: 0.5,
-                        rotation: 10,
-                        duration: 0.1,
-                        ease: 'power2.in',
-                        onComplete: () => {
-                            if (highlightElement && highlightElement.parentNode) {
-                                highlightElement.parentNode.removeChild(highlightElement)
-                                highlightsMap.current.delete(highlight.id)
-                            }
-                        }
-                    })
-                    return
-                }
+            if (isNavigating && isInRange && !highlightElement) {
 
-                if (isInRange && !highlightElement) {
-                    if (isNavigating) {
-                        const tl = gsap.timeline()
-                        tl.to({}, {
-                            duration: 0.8,
-                            onComplete: () => {
-                                if (highlightsRef.current && !highlightsMap.current.get(highlight.id)) {
-                                    const newHighlightElement = document.createElement('div')
-                                    newHighlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
-                                    newHighlightElement.style.left = `${highlight.position.x}%`
-                                    newHighlightElement.style.top = `${highlight.position.y}%`
-                                    newHighlightElement.innerHTML = `
-                                        <div class="highlight-icon">${highlight.icon}</div>
-                                        <div class="highlight-name">${highlight.name}</div>
-                                        <div class="highlight-pulse-ring"></div>
-                                        ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
-                                    `
-
-                                    if (onObjectClick && !isEditMode) {
-                                        newHighlightElement.style.cursor = 'pointer'
-                                        newHighlightElement.addEventListener('click', () => {
-                                            onObjectClick(highlight.id)
-                                        })
-                                    }
-
-                                    if (isEditMode) {
-                                        newHighlightElement.style.cursor = 'grab'
-                                        newHighlightElement.addEventListener('mousedown', (e) => {
-                                            handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
-                                        })
-                                    }
-
-                                    highlightsRef.current.appendChild(newHighlightElement)
-                                    highlightsMap.current.set(highlight.id, newHighlightElement)
-
-                                    gsap.set(newHighlightElement, {
-                                        opacity: 0,
-                                        scale: 0.5,
-                                        rotation: -10
-                                    })
-
-                                    gsap.to(newHighlightElement, {
-                                        opacity: 1,
-                                        scale: 1,
-                                        rotation: 0,
-                                        duration: 1.2,
-                                        ease: 'back.out(1.7)',
-                                    })
-                                }
-                            }
-                        })
-                    } else {
-                        highlightElement = document.createElement('div')
-                        highlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
-                        highlightElement.style.left = `${highlight.position.x}%`
-                        highlightElement.style.top = `${highlight.position.y}%`
-                        highlightElement.innerHTML = `
+                const tl = gsap.timeline()
+                tl.to({}, {
+                    duration: 0.8,
+                    onComplete: () => {
+                        if (highlightsRef.current && !highlightsMap.current.get(highlight.id)) {
+                            const newHighlightElement = document.createElement('div')
+                            newHighlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
+                            newHighlightElement.style.left = `${highlight.position.x}%`
+                            newHighlightElement.style.top = `${highlight.position.y}%`
+                            newHighlightElement.innerHTML = `
                                 <div class="highlight-icon">${highlight.icon}</div>
                                 <div class="highlight-name">${highlight.name}</div>
                                 <div class="highlight-pulse-ring"></div>
                                 ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
                             `
 
-                        if (onObjectClick && !isEditMode) {
-                            highlightElement.style.cursor = 'pointer'
-                            highlightElement.addEventListener('click', () => {
-                                onObjectClick(highlight.id)
-                            })
-                        }
-
-                        if (isEditMode) {
-                            highlightElement.style.cursor = 'grab'
-                            highlightElement.addEventListener('mousedown', (e) => {
-                                handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
-                            })
-                        }
-
-                        highlightsRef.current?.appendChild(highlightElement)
-                        highlightsMap.current.set(highlight.id, highlightElement)
-
-                        gsap.set(highlightElement, {
-                            opacity: 0,
-                            scale: 0.5,
-                            rotation: -10
-                        })
-
-                        gsap.to(highlightElement, {
-                            opacity: 1,
-                            scale: 1,
-                            rotation: 0,
-                            duration: 0.6,
-                            ease: 'back.out(1.7)',
-                        })
-                    }
-                } else if (!isInRange && highlightElement) {
-                    gsap.to(highlightElement, {
-                        opacity: 0,
-                        scale: 0.5,
-                        rotation: 10,
-                        duration: isNavigating ? 0.1 : 0.4,
-                        ease: 'power2.in',
-                        onComplete: () => {
-                            if (highlightElement && highlightElement.parentNode) {
-                                highlightElement.parentNode.removeChild(highlightElement)
-                                highlightsMap.current.delete(highlight.id)
+                            if (onObjectClick && !isEditMode) {
+                                newHighlightElement.style.cursor = 'pointer'
+                                newHighlightElement.addEventListener('click', () => {
+                                    onObjectClick(highlight.id)
+                                })
                             }
+
+                            if (isEditMode) {
+                                newHighlightElement.style.cursor = 'grab'
+                                newHighlightElement.addEventListener('mousedown', (e) => {
+                                    handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
+                                })
+                            }
+
+                            highlightsRef.current.appendChild(newHighlightElement)
+                            highlightsMap.current.set(highlight.id, newHighlightElement)
+
+                            gsap.set(newHighlightElement, {
+                                opacity: 0,
+                                scale: 0.5,
+                                rotation: -10
+                            })
+
+                            gsap.to(newHighlightElement, {
+                                opacity: 1,
+                                scale: 1,
+                                rotation: 0,
+                                duration: 1.2,
+                                ease: 'back.out(1.7)',
+
+                            })
                         }
-                    })
-                }
-            })
-        })
+                    }
+                })
+                return
+            }
 
-        return () => ctx.revert()
-    }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown, isNavigating, navigationTarget, navigationPoints])
-
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            highlightsMap.current.forEach((highlightElement, highlightId) => {
+            if (isInRange && !highlightElement) {
+                highlightElement = document.createElement('div')
                 highlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
-
-                const highlight = videoHighlights.find(h => h.id === highlightId)
-                if (highlight) {
-                    highlightElement.innerHTML = `
+                highlightElement.style.left = `${highlight.position.x}%`
+                highlightElement.style.top = `${highlight.position.y}%`
+                highlightElement.innerHTML = `
                         <div class="highlight-icon">${highlight.icon}</div>
                         <div class="highlight-name">${highlight.name}</div>
                         <div class="highlight-pulse-ring"></div>
                         ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
                     `
+
+                if (onObjectClick && !isEditMode) {
+                    highlightElement.style.cursor = 'pointer'
+                    highlightElement.addEventListener('click', () => {
+                        onObjectClick(highlight.id)
+                    })
                 }
 
                 if (isEditMode) {
                     highlightElement.style.cursor = 'grab'
-                    const newElement = highlightElement.cloneNode(true) as HTMLDivElement
-                    highlightElement.parentNode?.replaceChild(newElement, highlightElement)
-                    highlightsMap.current.set(highlightId, newElement)
-
-                    newElement.addEventListener('mousedown', (e) => {
-                        handleMouseDown(e as unknown as React.MouseEvent, highlightId)
+                    highlightElement.addEventListener('mousedown', (e) => {
+                        handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
                     })
-                } else {
-                    highlightElement.style.cursor = onObjectClick ? 'pointer' : 'default'
-                    const newElement = highlightElement.cloneNode(true) as HTMLDivElement
-                    highlightElement.parentNode?.replaceChild(newElement, highlightElement)
-                    highlightsMap.current.set(highlightId, newElement)
-
-                    if (onObjectClick) {
-                        newElement.addEventListener('click', () => {
-                            onObjectClick(highlightId)
-                        })
-                    }
                 }
-            })
-        })
 
-        return () => ctx.revert()
+                highlightsRef.current?.appendChild(highlightElement)
+                highlightsMap.current.set(highlight.id, highlightElement)
+
+                gsap.set(highlightElement, {
+                    opacity: 0,
+                    scale: 0.5,
+                    rotation: -10
+                })
+
+                gsap.to(highlightElement, {
+                    opacity: 1,
+                    scale: 1,
+                    rotation: 0,
+                    duration: isNavigating ? 1.2 : 0.6,
+                    ease: 'back.out(1.7)',
+                    delay: isNavigating ? 0.8 : 0
+                })
+            } else if (!isInRange && highlightElement) {
+                gsap.to(highlightElement, {
+                    opacity: 0,
+                    scale: 0.5,
+                    rotation: 10,
+                    duration: 0.4,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        if (highlightElement && highlightElement.parentNode) {
+                            highlightElement.parentNode.removeChild(highlightElement)
+                            highlightsMap.current.delete(highlight.id)
+                        }
+                    }
+                })
+            }
+        })
+    }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown, isNavigating, navigationTarget, navigationPoints])
+
+    useEffect(() => {
+        highlightsMap.current.forEach((highlightElement, highlightId) => {
+            highlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
+
+            const highlight = videoHighlights.find(h => h.id === highlightId)
+            if (highlight) {
+                highlightElement.innerHTML = `
+                    <div class="highlight-icon">${highlight.icon}</div>
+                    <div class="highlight-name">${highlight.name}</div>
+                    <div class="highlight-pulse-ring"></div>
+                    ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
+                `
+            }
+
+            if (isEditMode) {
+                highlightElement.style.cursor = 'grab'
+                const newElement = highlightElement.cloneNode(true) as HTMLDivElement
+                highlightElement.parentNode?.replaceChild(newElement, highlightElement)
+                highlightsMap.current.set(highlightId, newElement)
+
+                newElement.addEventListener('mousedown', (e) => {
+                    handleMouseDown(e as unknown as React.MouseEvent, highlightId)
+                })
+            } else {
+                highlightElement.style.cursor = onObjectClick ? 'pointer' : 'default'
+                const newElement = highlightElement.cloneNode(true) as HTMLDivElement
+                highlightElement.parentNode?.replaceChild(newElement, highlightElement)
+                highlightsMap.current.set(highlightId, newElement)
+
+                if (onObjectClick) {
+                    newElement.addEventListener('click', () => {
+                        onObjectClick(highlightId)
+                    })
+                }
+            }
+        })
     }, [isEditMode, onObjectClick, handleMouseDown, videoHighlights])
 
     useEffect(() => {
@@ -329,10 +314,6 @@ export function VideoHighlights({
             highlightsMapRef.clear()
         }
     }, [])
-
-
-
-
 
     return (
         <div className="video-highlights" ref={highlightsRef} />
