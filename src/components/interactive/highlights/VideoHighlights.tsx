@@ -153,9 +153,69 @@ export function VideoHighlights({
                     Math.abs(navigationTarget - point.scrollPosition) < 0.01
                 )
                 isInRange = targetPoint?.id === highlight.id
+
+
             }
 
             let highlightElement = highlightsMap.current.get(highlight.id)
+
+
+
+            // Block normal highlight creation during navigation
+            if (isNavigating && isInRange && !highlightElement) {
+                // Use GSAP timeline for delayed appearance
+                const tl = gsap.timeline()
+                tl.to({}, {
+                    duration: 0.8,
+                    onComplete: () => {
+                        if (highlightsRef.current && !highlightsMap.current.get(highlight.id)) {
+                            const newHighlightElement = document.createElement('div')
+                            newHighlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
+                            newHighlightElement.style.left = `${highlight.position.x}%`
+                            newHighlightElement.style.top = `${highlight.position.y}%`
+                            newHighlightElement.innerHTML = `
+                                <div class="highlight-icon">${highlight.icon}</div>
+                                <div class="highlight-name">${highlight.name}</div>
+                                <div class="highlight-pulse-ring"></div>
+                                ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
+                            `
+
+                            if (onObjectClick && !isEditMode) {
+                                newHighlightElement.style.cursor = 'pointer'
+                                newHighlightElement.addEventListener('click', () => {
+                                    onObjectClick(highlight.id)
+                                })
+                            }
+
+                            if (isEditMode) {
+                                newHighlightElement.style.cursor = 'grab'
+                                newHighlightElement.addEventListener('mousedown', (e) => {
+                                    handleMouseDown(e as any, highlight.id)
+                                })
+                            }
+
+                            highlightsRef.current.appendChild(newHighlightElement)
+                            highlightsMap.current.set(highlight.id, newHighlightElement)
+
+                            gsap.set(newHighlightElement, {
+                                opacity: 0,
+                                scale: 0.5,
+                                rotation: -10
+                            })
+
+                            gsap.to(newHighlightElement, {
+                                opacity: 1,
+                                scale: 1,
+                                rotation: 0,
+                                duration: 1.2,
+                                ease: 'back.out(1.7)',
+
+                            })
+                        }
+                    }
+                })
+                return
+            }
 
             if (isInRange && !highlightElement) {
                 highlightElement = document.createElement('div')
@@ -186,20 +246,22 @@ export function VideoHighlights({
                 highlightsRef.current?.appendChild(highlightElement)
                 highlightsMap.current.set(highlight.id, highlightElement)
 
-                gsap.fromTo(highlightElement,
-                    {
-                        opacity: 0,
-                        scale: 0.5,
-                        rotation: -10
-                    },
-                    {
-                        opacity: 1,
-                        scale: 1,
-                        rotation: 0,
-                        duration: 0.6,
-                        ease: 'back.out(1.7)'
-                    }
-                )
+                // Set initial state to prevent flash
+                gsap.set(highlightElement, {
+                    opacity: 0,
+                    scale: 0.5,
+                    rotation: -10
+                })
+
+                // Animate in with delay for navigation
+                gsap.to(highlightElement, {
+                    opacity: 1,
+                    scale: 1,
+                    rotation: 0,
+                    duration: isNavigating ? 1.2 : 0.6,
+                    ease: 'back.out(1.7)',
+                    delay: isNavigating ? 0.8 : 0
+                })
             } else if (!isInRange && highlightElement) {
                 gsap.to(highlightElement, {
                     opacity: 0,
@@ -216,7 +278,7 @@ export function VideoHighlights({
                 })
             }
         })
-    }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown])
+    }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown, isNavigating, navigationTarget, navigationPoints])
 
     useEffect(() => {
         highlightsMap.current.forEach((highlightElement, highlightId) => {
@@ -261,6 +323,10 @@ export function VideoHighlights({
             highlightsMap.current.clear()
         }
     }, [])
+
+
+
+
 
     return (
         <div className="video-highlights" ref={highlightsRef} />
