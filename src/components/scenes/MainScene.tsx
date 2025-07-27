@@ -25,6 +25,62 @@ export function MainScene() {
     const [isEditMode, setIsEditMode] = useState(false)
     const [isNavigating, setIsNavigating] = useState(false)
     const [navigationTarget, setNavigationTarget] = useState<number | null>(null)
+    const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+    const [isIndicatorHiding, setIsIndicatorHiding] = useState(false)
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+    const scrollTimeoutRef = useRef<number | null>(null)
+    const hideTimeoutRef = useRef<number | null>(null)
+
+    const startScrollIndicatorCycle = useCallback(() => {
+        setShowScrollIndicator(true)
+        hideTimeoutRef.current = window.setTimeout(() => {
+            setIsIndicatorHiding(true)
+            setTimeout(() => {
+                setShowScrollIndicator(false)
+                setIsIndicatorHiding(false)
+                scrollTimeoutRef.current = window.setTimeout(() => {
+                    setShowScrollIndicator(true)
+                    hideTimeoutRef.current = window.setTimeout(() => {
+                        setIsIndicatorHiding(true)
+                        setTimeout(() => {
+                            setShowScrollIndicator(false)
+                            setIsIndicatorHiding(false)
+                            // Цикл повторюється
+                            scrollTimeoutRef.current = window.setTimeout(() => {
+                                setShowScrollIndicator(true)
+                                hideTimeoutRef.current = window.setTimeout(() => {
+                                    setIsIndicatorHiding(true)
+                                    setTimeout(() => {
+                                        setShowScrollIndicator(false)
+                                        setIsIndicatorHiding(false)
+                                    }, 400)
+                                }, 3000)
+                            }, 10000)
+                        }, 400)
+                    }, 3000)
+                }, 10000)
+            }, 400)
+        }, 3000)
+    }, [])
+
+    const resetScrollIndicator = useCallback(() => {
+        if (showScrollIndicator) {
+            setIsIndicatorHiding(true)
+            setTimeout(() => {
+                setShowScrollIndicator(false)
+                setIsIndicatorHiding(false)
+            }, 400)
+        }
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current)
+        }
+        if (hideTimeoutRef.current) {
+            clearTimeout(hideTimeoutRef.current)
+        }
+        scrollTimeoutRef.current = window.setTimeout(() => {
+            startScrollIndicatorCycle()
+        }, 3000)
+    }, [showScrollIndicator, startScrollIndicatorCycle])
 
     useEffect(() => {
         gsap.set('.main-scene', { opacity: 0 })
@@ -83,6 +139,14 @@ export function MainScene() {
 
     const handleMouseEnter = useCallback(() => {
         setIsMouseInside(true)
+    }, [])
+
+    const handleScroll = useCallback(() => {
+        resetScrollIndicator()
+    }, [resetScrollIndicator])
+
+    const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+        setMousePosition({ x: e.clientX, y: e.clientY })
     }, [])
 
     useLayoutEffect(() => {
@@ -182,12 +246,18 @@ export function MainScene() {
             setSelectedObject(objectInfo)
             setShowObjectModal(true)
         }
-    }, [])
+
+        // Скидаємо індикатор при взаємодії з хайлайтами
+        resetScrollIndicator()
+    }, [resetScrollIndicator])
 
     const handleObjectModalClose = useCallback(() => {
         setShowObjectModal(false)
         setSelectedObject(null)
-    }, [])
+
+        // Скидаємо індикатор при закритті модалок
+        resetScrollIndicator()
+    }, [resetScrollIndicator])
 
     const handleEditModeToggle = useCallback((editMode: boolean) => {
         setIsEditMode(editMode)
@@ -206,6 +276,27 @@ export function MainScene() {
     const shouldAutoShow = useMemo(() => {
         return !hasShownInitialHelp && showInstructions
     }, [hasShownInitialHelp, showInstructions])
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll)
+        window.addEventListener('mousemove', handleGlobalMouseMove)
+
+        // Початковий таймер для показу індикатора через 3 секунди
+        scrollTimeoutRef.current = window.setTimeout(() => {
+            startScrollIndicatorCycle()
+        }, 3000)
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('mousemove', handleGlobalMouseMove)
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current)
+            }
+            if (hideTimeoutRef.current) {
+                clearTimeout(hideTimeoutRef.current)
+            }
+        }
+    }, [handleScroll, handleGlobalMouseMove, startScrollIndicatorCycle])
 
     return (
         <div className="main-scene" ref={containerRef}>
@@ -253,6 +344,22 @@ export function MainScene() {
                 onClose={handleObjectModalClose}
                 objectInfo={selectedObject}
             />
+
+            {showScrollIndicator && (
+                <div
+                    className={`scroll-indicator ${isIndicatorHiding ? 'hiding' : ''}`}
+                    style={{
+                        position: 'fixed',
+                        left: mousePosition.x - 50,
+                        top: mousePosition.y + 20,
+                        zIndex: 1000,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    <div className="scroll-indicator-icon">↓</div>
+                    <div className="scroll-indicator-text">Scroll to explore</div>
+                </div>
+            )}
         </div>
     )
 } 
