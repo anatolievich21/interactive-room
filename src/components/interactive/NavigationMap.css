@@ -50,7 +50,7 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
-    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: slideIn 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes slideIn {
@@ -171,7 +171,7 @@
     font-size: 11px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
-    animation: fadeIn 0.2s ease;
+    animation: fadeIn 0.1s ease;
 }
 
 @keyframes fadeIn {

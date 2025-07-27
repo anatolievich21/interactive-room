@@ -98,11 +98,13 @@ export function MainScene() {
                 scrub: 1,
                 onUpdate: (self) => {
                     const progress = self.progress
-                    setScrollProgress(progress)
+                    // Invert progress: scroll down = forward in video, scroll up = backward
+                    const invertedProgress = 1 - progress
+                    setScrollProgress(invertedProgress)
                     const duration = video.duration || 0
 
                     if (duration > 0) {
-                        const targetTime = progress * duration
+                        const targetTime = invertedProgress * duration
 
                         if (Math.abs(video.currentTime - targetTime) > 0.1) {
                             video.currentTime = targetTime
@@ -144,7 +146,9 @@ export function MainScene() {
         const windowHeight = window.innerHeight
         const scrollDistance = containerHeight - windowHeight
 
-        const targetScroll = scrollDistance * scrollPosition
+        // Invert scroll position to match the inverted video progress
+        const invertedScrollPosition = 1 - scrollPosition
+        const targetScroll = scrollDistance * invertedScrollPosition
 
         window.scrollTo({
             top: targetScroll,

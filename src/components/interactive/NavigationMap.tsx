@@ -12,38 +12,31 @@ interface NavigationPoint {
 
 const navigationPoints: NavigationPoint[] = [
     {
-        id: 'guitar',
-        name: 'Guitar',
-        icon: '🎸',
-        scrollPosition: 0.1,
-        description: 'Music corner'
-    },
-    {
-        id: 'tv',
-        name: 'TV',
-        icon: '📺',
-        scrollPosition: 0.3,
-        description: 'Entertainment hub'
+        id: 'sofa',
+        name: 'Sofa',
+        icon: '🛋️',
+        scrollPosition: 0.0,
+        description: 'Comfort zone'
     },
     {
         id: 'fireplace',
         name: 'Fireplace',
         icon: '🔥',
-        scrollPosition: 0.5,
+        scrollPosition: 0.25,
         description: 'Warm and cozy'
     },
     {
-        id: 'sofa',
-        name: 'Sofa',
-        icon: '🛋️',
-        scrollPosition: 0.7,
-        description: 'Comfort zone'
+        id: 'tv',
+        name: 'TV',
+        icon: '📺',
+        scrollPosition: 0.5,
+        description: 'Entertainment hub'
     },
     {
         id: 'bookshelf',
         name: 'Bookshelf',
         icon: '📚',
-        scrollPosition: 0.9,
+        scrollPosition: 0.75,
         description: 'Knowledge corner'
     }
 ]
@@ -64,7 +57,7 @@ export function NavigationMap({ onNavigate, currentProgress }: NavigationMapProp
 
         gsap.to(toggleRef.current, {
             scale: 0.9,
-            duration: 0.15,
+            duration: 0.1,
             ease: "power2.out",
             yoyo: true,
             repeat: 1
@@ -76,7 +69,7 @@ export function NavigationMap({ onNavigate, currentProgress }: NavigationMapProp
 
         gsap.to(toggleRef.current, {
             scale: 0.85,
-            duration: 0.15,
+            duration: 0.1,
             ease: "power2.out",
             yoyo: true,
             repeat: 1
@@ -98,23 +91,23 @@ export function NavigationMap({ onNavigate, currentProgress }: NavigationMapProp
             tl.to(header, {
                 opacity: 1,
                 y: 0,
-                duration: 0.4,
+                duration: 0.2,
                 ease: "power2.out"
             })
                 .to(closeButton, {
                     opacity: 1,
                     scale: 1,
-                    duration: 0.4,
+                    duration: 0.2,
                     ease: "back.out(1.7)"
-                }, '-=0.2')
+                }, '-=0.1')
                 .to(points, {
                     x: 0,
                     opacity: 1,
                     scale: 1,
-                    duration: 0.6,
-                    stagger: 0.08,
+                    duration: 0.3,
+                    stagger: 0.03,
                     ease: "back.out(1.4)"
-                }, '-=0.1')
+                }, '-=0.05')
         }
     }, [isExpanded])
 
