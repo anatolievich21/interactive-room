@@ -64,6 +64,10 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 rotation: isAutoShow ? -5 : 0
             })
 
+            requestAnimationFrame(() => {
+                containerRef.current?.classList.add('visible')
+            })
+
             setIsAnimating(true)
 
             if (isAutoShow) {
@@ -97,7 +101,8 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
     }, [isMounted, isAutoShow, isVisible])
 
     useEffect(() => {
-        if (!isVisible) {
+        if (!isVisible && containerRef.current) {
+            containerRef.current.classList.remove('visible')
             setIsAnimating(false)
         }
     }, [isVisible])
@@ -170,6 +175,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
             ease: 'power2.in',
             onComplete: () => {
                 setIsAnimating(false)
+                containerRef.current?.classList.remove('visible')
                 onClose()
                 setCurrentStep(0)
                 setIsMounted(false)
@@ -190,6 +196,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
             ease: 'power2.in',
             onComplete: () => {
                 setIsAnimating(false)
+                containerRef.current?.classList.remove('visible')
                 onClose()
                 setCurrentStep(0)
                 setIsMounted(false)

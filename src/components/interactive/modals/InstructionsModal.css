@@ -23,6 +23,15 @@
     position: relative;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.instructions-modal.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-close {
