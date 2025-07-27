@@ -24,19 +24,23 @@ interface VideoHighlightsProps {
     onObjectClick?: (objectId: string) => void
     isEditMode?: boolean
     onPositionChange?: (highlightId: string, position: { x: number, y: number }) => void
+    isNavigating?: boolean
+    navigationTarget?: number | null
 }
 
 export function VideoHighlights({
     currentProgress,
     onObjectClick,
     isEditMode = false,
-    onPositionChange
+    onPositionChange,
+    isNavigating = false,
+    navigationTarget = null
 }: VideoHighlightsProps) {
     const highlightsRef = useRef<HTMLDivElement>(null)
     const highlightsMap = useRef<Map<string, HTMLDivElement>>(new Map())
     const [draggedHighlight, setDraggedHighlight] = useState<string | null>(null)
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-    const { videoHighlights: defaultHighlights } = useNavigationData()
+    const { videoHighlights: defaultHighlights, navigationPoints } = useNavigationData()
     const [videoHighlights, setVideoHighlights] = useState<VideoHighlight[]>(defaultHighlights)
     const containerRectRef = useRef<DOMRect | null>(null)
 
@@ -140,8 +144,16 @@ export function VideoHighlights({
         if (!highlightsRef.current) return
 
         videoHighlights.forEach(highlight => {
-            const isInRange = currentProgress >= highlight.highlightRange.start &&
+            let isInRange = currentProgress >= highlight.highlightRange.start &&
                 currentProgress <= highlight.highlightRange.end
+
+            // If navigating, only show the target highlight
+            if (isNavigating && navigationTarget !== null) {
+                const targetPoint = navigationPoints.find(point =>
+                    Math.abs(navigationTarget - point.scrollPosition) < 0.01
+                )
+                isInRange = targetPoint?.id === highlight.id
+            }
 
             let highlightElement = highlightsMap.current.get(highlight.id)
 

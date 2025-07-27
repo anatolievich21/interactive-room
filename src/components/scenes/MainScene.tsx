@@ -22,6 +22,8 @@ export function MainScene() {
     const [showObjectModal, setShowObjectModal] = useState(false)
     const [selectedObject, setSelectedObject] = useState<ObjectInfo | null>(null)
     const [isEditMode, setIsEditMode] = useState(false)
+    const [isNavigating, setIsNavigating] = useState(false)
+    const [navigationTarget, setNavigationTarget] = useState<number | null>(null)
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -132,6 +134,9 @@ export function MainScene() {
         const container = containerRef.current
         if (!container) return
 
+        setIsNavigating(true)
+        setNavigationTarget(scrollPosition)
+
         const containerHeight = container.offsetHeight
         const windowHeight = window.innerHeight
         const scrollDistance = containerHeight - windowHeight
@@ -142,6 +147,12 @@ export function MainScene() {
             top: targetScroll,
             behavior: 'smooth'
         })
+
+        // Reset navigation state after scroll completes
+        setTimeout(() => {
+            setIsNavigating(false)
+            setNavigationTarget(null)
+        }, 1000)
     }, [])
 
     const handleInstructionsClose = useCallback(() => {
@@ -200,6 +211,8 @@ export function MainScene() {
                 currentProgress={scrollProgress}
                 onObjectClick={handleObjectClick}
                 isEditMode={isEditMode}
+                isNavigating={isNavigating}
+                navigationTarget={navigationTarget}
             />
 
             <EditModeIndicators isEditMode={isEditMode} />
