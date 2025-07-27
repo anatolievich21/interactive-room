@@ -11,6 +11,7 @@ interface InstructionsModalProps {
 export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: InstructionsModalProps) {
     const [currentStep, setCurrentStep] = useState(0)
     const [isAnimating, setIsAnimating] = useState(false)
+    const [isMounted, setIsMounted] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
     const contentRef = useRef<HTMLDivElement>(null)
 
@@ -48,7 +49,13 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
     ], [])
 
     useEffect(() => {
-        if (isVisible && containerRef.current) {
+        if (isVisible) {
+            setIsMounted(true)
+        }
+    }, [isVisible])
+
+    useEffect(() => {
+        if (isMounted && containerRef.current) {
             gsap.killTweensOf(containerRef.current)
 
             gsap.set(containerRef.current, {
@@ -87,7 +94,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 })
             }
         }
-    }, [isVisible, isAutoShow])
+    }, [isMounted, isAutoShow, isVisible])
 
     useEffect(() => {
         if (!isVisible) {
@@ -165,6 +172,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 setIsAnimating(false)
                 onClose()
                 setCurrentStep(0)
+                setIsMounted(false)
             }
         })
     }, [onClose])
@@ -184,6 +192,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 setIsAnimating(false)
                 onClose()
                 setCurrentStep(0)
+                setIsMounted(false)
             }
         })
     }, [onClose])
@@ -192,7 +201,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
     const isFirstStep = useMemo(() => currentStep === 0, [currentStep])
     const isLastStep = useMemo(() => currentStep === 4, [currentStep])
 
-    if (!isVisible) return null
+    if (!isMounted) return null
 
     return (
         <div className="instructions-modal-overlay" onClick={handleClose}>
