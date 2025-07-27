@@ -3,7 +3,8 @@ import { gsap } from 'gsap'
 import { EditModeToggle } from '../buttons/EditModeToggle'
 import { HelpButton } from '../buttons/HelpButton'
 import { BurgerButton } from '../buttons/BurgerButton'
-import { navigationPoints, type NavigationPoint } from '../data/navigationData'
+import { useNavigationData } from '../../../hooks/useNavigationData'
+import type { NavigationPoint } from '../../../hooks/useNavigationData'
 import './NavigationMap.css'
 
 interface NavigationMapProps {
@@ -25,6 +26,7 @@ export function NavigationMap({
     const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
     const toggleRef = useRef<HTMLButtonElement>(null)
     const pointsRef = useRef<HTMLDivElement>(null)
+    const { navigationPoints } = useNavigationData()
 
     const activePoint = navigationPoints.find(point =>
         currentProgress >= point.highlightRange.start &&

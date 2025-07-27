@@ -5,6 +5,7 @@ export { BurgerButton } from './buttons/BurgerButton'
 
 // Navigation
 export { NavigationMap } from './navigation/NavigationMap'
+export { SceneNavigation } from './navigation/SceneNavigation'
 
 // Modals
 export { InstructionsModal } from './modals/InstructionsModal'

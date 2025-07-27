@@ -17,36 +17,7 @@ interface VideoHighlight {
     }
 }
 
-const defaultVideoHighlights: VideoHighlight[] = [
-    {
-        id: 'sofa',
-        name: 'Sofa',
-        icon: '🛋️',
-        highlightRange: { start: 0.01, end: 0.05 },
-        position: { x: 25, y: 70 }
-    },
-    {
-        id: 'fireplace',
-        name: 'Fireplace',
-        icon: '🔥',
-        highlightRange: { start: 0.15, end: 0.20 },
-        position: { x: 75, y: 60 }
-    },
-    {
-        id: 'tv',
-        name: 'TV',
-        icon: '📺',
-        highlightRange: { start: 0.30, end: 0.40 },
-        position: { x: 50, y: 30 }
-    },
-    {
-        id: 'bookshelf',
-        name: 'Bookshelf',
-        icon: '📚',
-        highlightRange: { start: 0.60, end: 0.65 },
-        position: { x: 20, y: 40 }
-    }
-]
+import { useNavigationData } from '../../../hooks/useNavigationData'
 
 interface VideoHighlightsProps {
     currentProgress: number
@@ -65,22 +36,25 @@ export function VideoHighlights({
     const highlightsMap = useRef<Map<string, HTMLDivElement>>(new Map())
     const [draggedHighlight, setDraggedHighlight] = useState<string | null>(null)
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-    const [videoHighlights, setVideoHighlights] = useState<VideoHighlight[]>(defaultVideoHighlights)
+    const { videoHighlights: defaultHighlights } = useNavigationData()
+    const [videoHighlights, setVideoHighlights] = useState<VideoHighlight[]>(defaultHighlights)
     const containerRectRef = useRef<DOMRect | null>(null)
 
     useEffect(() => {
         const savedPositions = highlightStorage.loadPositions()
 
         if (savedPositions.length > 0) {
-            const updatedHighlights = defaultVideoHighlights.map(highlight => {
+            const updatedHighlights = defaultHighlights.map(highlight => {
                 const savedPosition = savedPositions.find(p => p.id === highlight.id)
                 return savedPosition
                     ? { ...highlight, position: savedPosition.position }
                     : highlight
             })
             setVideoHighlights(updatedHighlights)
+        } else {
+            setVideoHighlights(defaultHighlights)
         }
-    }, [])
+    }, [defaultHighlights])
 
     const handleMouseDown = useCallback((e: React.MouseEvent, highlightId: string) => {
         if (!isEditMode) return
