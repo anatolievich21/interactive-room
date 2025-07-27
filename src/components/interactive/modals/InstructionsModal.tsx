@@ -52,33 +52,35 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
             gsap.killTweensOf(containerRef.current)
 
             gsap.set(containerRef.current, {
-                opacity: 0,
-                scale: isAutoShow ? 0.8 : 0.9,
-                y: isAutoShow ? 20 : 10
+                scale: 0,
+                y: isAutoShow ? 20 : 10,
+                rotation: isAutoShow ? -5 : 0
             })
 
             setIsAnimating(true)
 
             if (isAutoShow) {
-                const timer = setTimeout(() => {
-                    if (containerRef.current && isVisible) {
-                        gsap.to(containerRef.current, {
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                            duration: 0.8,
-                            ease: 'back.out(1.7)',
-                            onComplete: () => setIsAnimating(false)
-                        })
+                const tl = gsap.timeline()
+                tl.to({}, {
+                    duration: 1,
+                    onComplete: () => {
+                        if (containerRef.current && isVisible) {
+                            gsap.to(containerRef.current, {
+                                scale: 1,
+                                y: 0,
+                                rotation: 0,
+                                duration: 0.8,
+                                ease: 'back.out(1.7)',
+                                onComplete: () => setIsAnimating(false)
+                            })
+                        }
                     }
-                }, 1000)
-
-                return () => clearTimeout(timer)
+                })
             } else {
                 gsap.to(containerRef.current, {
-                    opacity: 1,
                     scale: 1,
                     y: 0,
+                    rotation: 0,
                     duration: 0.3,
                     ease: 'power2.out',
                     onComplete: () => setIsAnimating(false)
