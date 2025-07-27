@@ -16,12 +16,20 @@ export function StartScene({ onStart }: StartSceneProps) {
 
     useEffect(() => {
         if (!hasAnimatedIn) {
+            gsap.set('.start-scene', { opacity: 0 })
+
             const tl = gsap.timeline()
 
-            tl.fromTo(titleRef.current,
-                { opacity: 0, y: -50 },
-                { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }
-            )
+            tl.to('.start-scene', {
+                opacity: 1,
+                duration: 0.5,
+                ease: 'power2.out'
+            })
+                .fromTo(titleRef.current,
+                    { opacity: 0, y: -50 },
+                    { opacity: 1, y: 0, duration: 1, ease: 'power2.out' },
+                    '-=0.3'
+                )
                 .fromTo(subtitleRef.current,
                     { opacity: 0, y: 30 },
                     { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' },
@@ -93,15 +101,15 @@ export function StartScene({ onStart }: StartSceneProps) {
 
             <div className="start-overlay">
                 <div className="start-content">
-                    <h1 ref={titleRef} className="start-title">Welcome to the Journey</h1>
-                    <p ref={subtitleRef} className="start-subtitle">Experience the cinematic adventure</p>
+                    <h1 ref={titleRef} className="start-title">Welcome to Your Relaxation Room</h1>
+                    <p ref={subtitleRef} className="start-subtitle">Discover every corner of your perfect space</p>
 
                     <button
                         ref={buttonRef}
                         className="start-button"
                         onClick={handleStartClick}
                     >
-                        Begin Your Journey
+                        Explore the Room
                     </button>
                 </div>
             </div>

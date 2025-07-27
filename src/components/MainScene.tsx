@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, useLayoutEffect } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './MainScene.css'
@@ -21,7 +21,12 @@ export function MainScene() {
         gsap.to(video, {
             scale: 1,
             x: '0%',
-            y: '0%',
+            duration: 0.6,
+            ease: 'power2.out'
+        })
+
+        gsap.to(video, {
+            objectPosition: 'center center',
             duration: 0.6,
             ease: 'power2.out'
         })
@@ -44,17 +49,25 @@ export function MainScene() {
         const normalizedX = x / rect.width
         const normalizedY = y / rect.height
 
-        const maxMoveX = (1.15 - 1) * 100
-        const maxMoveY = (1.15 - 1) * 100
+        const maxMoveX = (1.1 - 1) * 100
+        const panIntensity = 15
 
         const moveX = (0.5 - normalizedX) * maxMoveX
-        const moveY = (0.5 - normalizedY) * maxMoveY
+        const moveY = (0.5 - normalizedY) * panIntensity
+
+        const objectPositionX = 50 + moveX * 0.5
+        const objectPositionY = 50 + moveY
 
         gsap.to(video, {
-            scale: 1.15,
+            scale: 1.1,
             x: `${moveX}%`,
-            y: `${moveY}%`,
-            duration: 1.0,
+            duration: 2,
+            ease: 'power2.out'
+        })
+
+        gsap.to(video, {
+            objectPosition: `${objectPositionX}% ${objectPositionY}%`,
+            duration: 2,
             ease: 'power2.out'
         })
     }, [isMouseInside])
@@ -63,7 +76,7 @@ export function MainScene() {
         setIsMouseInside(true)
     }, [])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const video = videoRef.current
         const container = containerRef.current
 
@@ -71,40 +84,44 @@ export function MainScene() {
 
         video.currentTime = 0
 
-        container.addEventListener('mouseenter', handleMouseEnter)
-        container.addEventListener('mouseleave', handleMouseLeave)
+        const ctx = gsap.context(() => {
+            container.addEventListener('mouseenter', handleMouseEnter)
+            container.addEventListener('mouseleave', handleMouseLeave)
 
-        const scrollTrigger = ScrollTrigger.create({
-            trigger: container,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 0.1,
-            onUpdate: (self) => {
-                const progress = self.progress
-                const duration = video.duration || 0
+            const scrollTrigger = ScrollTrigger.create({
+                trigger: container,
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 0.1,
+                onUpdate: (self) => {
+                    const progress = self.progress
+                    const duration = video.duration || 0
 
-                if (duration > 0) {
-                    let targetTime: number
+                    if (duration > 0) {
+                        let targetTime: number
 
-                    if (progress > 0.5) {
-                        const reverseProgress = 1 - (progress - 0.5) * 2
-                        targetTime = reverseProgress * duration
-                    } else {
-                        targetTime = progress * 2 * duration
-                    }
+                        if (progress > 0.5) {
+                            const reverseProgress = 1 - (progress - 0.5) * 2
+                            targetTime = reverseProgress * duration
+                        } else {
+                            targetTime = progress * 2 * duration
+                        }
 
-                    if (Math.abs(video.currentTime - targetTime) > 0.1) {
-                        video.currentTime = targetTime
+                        if (Math.abs(video.currentTime - targetTime) > 0.1) {
+                            video.currentTime = targetTime
+                        }
                     }
                 }
+            })
+
+            return () => {
+                scrollTrigger.kill()
+                container.removeEventListener('mouseenter', handleMouseEnter)
+                container.removeEventListener('mouseleave', handleMouseLeave)
             }
         })
 
-        return () => {
-            scrollTrigger.kill()
-            container.removeEventListener('mouseenter', handleMouseEnter)
-            container.removeEventListener('mouseleave', handleMouseLeave)
-        }
+        return () => ctx.revert()
     }, [handleMouseEnter, handleMouseLeave])
 
     useEffect(() => {

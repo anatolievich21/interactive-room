@@ -51,6 +51,17 @@
     box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
 }
 
+.loading-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    font-family: var(--font-family);
+    color: white;
+    margin-bottom: 2rem;
+    opacity: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
 .loading-text {
     font-size: 1.3rem;
     opacity: 0;
