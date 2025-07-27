@@ -26,6 +26,15 @@ export function MainScene() {
     const [isNavigating, setIsNavigating] = useState(false)
     const [navigationTarget, setNavigationTarget] = useState<number | null>(null)
 
+    useEffect(() => {
+        gsap.set('.main-scene', { opacity: 0 })
+        gsap.to('.main-scene', {
+            opacity: 1,
+            duration: 0.8,
+            ease: 'power2.out'
+        })
+    }, [])
+
 
 
     const handleMouseLeave = useCallback(() => {

@@ -87,12 +87,26 @@ export function StartScene({ onStart }: StartSceneProps) {
     }
 
     const handleVideoEnded = () => {
-        gsap.to('.start-scene', {
+        const tl = gsap.timeline()
+
+        tl.to('.start-video', {
             opacity: 0,
-            duration: 0.6,
-            ease: 'power2.in',
-            onComplete: onStart
+            scale: 1.05,
+            duration: 0.8,
+            ease: 'power2.in'
         })
+            .to('.start-overlay', {
+                opacity: 0,
+                scale: 0.95,
+                duration: 0.6,
+                ease: 'power2.in'
+            }, '-=0.4')
+            .to('.start-scene', {
+                opacity: 0,
+                duration: 0.4,
+                ease: 'power2.in',
+                onComplete: onStart
+            }, '-=0.2')
     }
 
     return (
