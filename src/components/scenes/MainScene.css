@@ -15,5 +15,5 @@
     object-position: center center;
     z-index: 1;
     transform-origin: center center;
-    will-change: transform, object-position;
+    will-change: transform;
 }

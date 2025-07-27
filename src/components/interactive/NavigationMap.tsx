@@ -19,9 +19,9 @@ const navigationPoints: NavigationPoint[] = [
         id: 'sofa',
         name: 'Sofa',
         icon: '🛋️',
-        scrollPosition: 0.025, // середина діапазону 0-5%
+        scrollPosition: 0.03, // середина діапазону 1-5%
         description: 'Comfort zone',
-        highlightRange: { start: 0.0, end: 0.05 }
+        highlightRange: { start: 0.01, end: 0.05 }
     },
     {
         id: 'fireplace',

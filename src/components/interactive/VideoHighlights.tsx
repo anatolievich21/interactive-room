@@ -11,8 +11,8 @@ interface VideoHighlight {
         end: number
     }
     position: {
-        x: number // відсотки від ширини відео
-        y: number // відсотки від висоти відео
+        x: number
+        y: number
     }
 }
 
@@ -21,29 +21,29 @@ const videoHighlights: VideoHighlight[] = [
         id: 'sofa',
         name: 'Sofa',
         icon: '🛋️',
-        highlightRange: { start: 0.0, end: 0.05 },
-        position: { x: 25, y: 70 } // позиція дивана на відео
+        highlightRange: { start: 0.01, end: 0.05 },
+        position: { x: 25, y: 70 }
     },
     {
         id: 'fireplace',
         name: 'Fireplace',
         icon: '🔥',
         highlightRange: { start: 0.15, end: 0.20 },
-        position: { x: 75, y: 60 } // позиція каміна на відео
+        position: { x: 75, y: 60 }
     },
     {
         id: 'tv',
         name: 'TV',
         icon: '📺',
         highlightRange: { start: 0.30, end: 0.40 },
-        position: { x: 50, y: 30 } // позиція ТВ на відео
+        position: { x: 50, y: 30 }
     },
     {
         id: 'bookshelf',
         name: 'Bookshelf',
         icon: '📚',
         highlightRange: { start: 0.60, end: 0.65 },
-        position: { x: 20, y: 40 } // позиція шкафа на відео
+        position: { x: 20, y: 40 }
     }
 ]
 
@@ -66,7 +66,6 @@ export function VideoHighlights({ currentProgress, onObjectClick }: VideoHighlig
             let highlightElement = highlightsMap.current.get(highlight.id)
 
             if (isInRange && !highlightElement) {
-                // Створюємо новий елемент
                 highlightElement = document.createElement('div')
                 highlightElement.className = 'video-highlight'
                 highlightElement.style.left = `${highlight.position.x}%`
@@ -87,7 +86,6 @@ export function VideoHighlights({ currentProgress, onObjectClick }: VideoHighlig
                 highlightsRef.current?.appendChild(highlightElement)
                 highlightsMap.current.set(highlight.id, highlightElement)
 
-                // Анімація появи
                 gsap.fromTo(highlightElement,
                     {
                         opacity: 0,
@@ -103,7 +101,6 @@ export function VideoHighlights({ currentProgress, onObjectClick }: VideoHighlig
                     }
                 )
             } else if (!isInRange && highlightElement) {
-                // Анімація зникнення
                 gsap.to(highlightElement, {
                     opacity: 0,
                     scale: 0.5,

@@ -32,8 +32,7 @@ export function MainScene() {
 
         gsap.to(video, {
             scale: 1,
-            x: '0%',
-            y: '0%',
+            transform: 'translate3d(0px, 0px, 0)',
             duration: 0.6,
             ease: 'power2.out'
         })
@@ -56,16 +55,12 @@ export function MainScene() {
         const normalizedX = x / rect.width
         const normalizedY = y / rect.height
 
-        const maxMoveX = (1.1 - 1) * 100
-        const maxMoveY = (1.1 - 1) * 100
-
-        const moveX = (0.5 - normalizedX) * maxMoveX
-        const moveY = (0.5 - normalizedY) * maxMoveY
+        const moveX = (0.5 - normalizedX) * 50
+        const moveY = (0.5 - normalizedY) * 50
 
         gsap.to(video, {
             scale: 1.1,
-            x: `${moveX}%`,
-            y: `${moveY}%`,
+            transform: `translate3d(${moveX}px, ${moveY}px, 0)`,
             duration: 1.0,
             ease: 'power2.out'
         })
