@@ -2,6 +2,8 @@
 
 A modern, cinematic web interface with scroll-controlled animations and interactive highlights.
 
+**🌐 Live Demo: [https://interactive-room-seven.vercel.app/](https://interactive-room-seven.vercel.app/)**
+
 ## Features
 
 - **Interactive Video Experience**: Scroll-controlled video playback with smooth transitions
