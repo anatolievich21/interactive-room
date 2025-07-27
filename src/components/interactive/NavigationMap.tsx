@@ -22,21 +22,21 @@ const navigationPoints: NavigationPoint[] = [
         id: 'fireplace',
         name: 'Fireplace',
         icon: '🔥',
-        scrollPosition: 0.25,
+        scrollPosition: 0.33,
         description: 'Warm and cozy'
     },
     {
         id: 'tv',
         name: 'TV',
         icon: '📺',
-        scrollPosition: 0.5,
+        scrollPosition: 0.66,
         description: 'Entertainment hub'
     },
     {
         id: 'bookshelf',
         name: 'Bookshelf',
         icon: '📚',
-        scrollPosition: 0.75,
+        scrollPosition: 1.0,
         description: 'Knowledge corner'
     }
 ]
@@ -44,9 +44,10 @@ const navigationPoints: NavigationPoint[] = [
 interface NavigationMapProps {
     onNavigate: (scrollPosition: number) => void
     currentProgress: number
+    onHelpClick?: () => void
 }
 
-export function NavigationMap({ onNavigate, currentProgress }: NavigationMapProps) {
+export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: NavigationMapProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
     const toggleRef = useRef<HTMLButtonElement>(null)
@@ -113,18 +114,29 @@ export function NavigationMap({ onNavigate, currentProgress }: NavigationMapProp
 
     return (
         <div className={`navigation-map ${isExpanded ? 'expanded' : ''}`}>
-            <button
-                ref={toggleRef}
-                className="navigation-toggle"
-                onClick={toggleExpanded}
-                aria-label="Toggle navigation map"
-            >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
+            <div className="navigation-controls">
+                <button
+                    className="help-button"
+                    onClick={onHelpClick}
+                    aria-label="Show help"
+                    title="Help"
+                >
+                    ?
+                </button>
+
+                <button
+                    ref={toggleRef}
+                    className="navigation-toggle"
+                    onClick={toggleExpanded}
+                    aria-label="Toggle navigation map"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
 
             {isExpanded && (
                 <div className="navigation-points" ref={pointsRef}>

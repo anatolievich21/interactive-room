@@ -3,6 +3,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { NavigationMap } from '../interactive/NavigationMap'
 import SceneNavigation from '../interactive/SceneNavigation'
+import { InstructionsModal } from '../interactive/InstructionsModal'
 import './MainScene.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -12,6 +13,8 @@ export function MainScene() {
     const containerRef = useRef<HTMLDivElement>(null)
     const [isMouseInside, setIsMouseInside] = useState(false)
     const [scrollProgress, setScrollProgress] = useState(0)
+    const [showInstructions, setShowInstructions] = useState(false)
+    const [hasShownInitialHelp, setHasShownInitialHelp] = useState(false)
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -24,12 +27,7 @@ export function MainScene() {
         gsap.to(video, {
             scale: 1,
             x: '0%',
-            duration: 0.6,
-            ease: 'power2.out'
-        })
-
-        gsap.to(video, {
-            objectPosition: 'center center',
+            y: '0%',
             duration: 0.6,
             ease: 'power2.out'
         })
@@ -53,24 +51,16 @@ export function MainScene() {
         const normalizedY = y / rect.height
 
         const maxMoveX = (1.1 - 1) * 100
-        const panIntensity = 15
+        const maxMoveY = (1.1 - 1) * 100
 
         const moveX = (0.5 - normalizedX) * maxMoveX
-        const moveY = (0.5 - normalizedY) * panIntensity
-
-        const objectPositionX = 50 + moveX * 0.5
-        const objectPositionY = 50 + moveY
+        const moveY = (0.5 - normalizedY) * maxMoveY
 
         gsap.to(video, {
             scale: 1.1,
             x: `${moveX}%`,
-            duration: 2,
-            ease: 'power2.out'
-        })
-
-        gsap.to(video, {
-            objectPosition: `${objectPositionX}% ${objectPositionY}%`,
-            duration: 2,
+            y: `${moveY}%`,
+            duration: 1.0,
             ease: 'power2.out'
         })
     }, [isMouseInside])
@@ -98,13 +88,11 @@ export function MainScene() {
                 scrub: 1,
                 onUpdate: (self) => {
                     const progress = self.progress
-                    // Invert progress: scroll down = forward in video, scroll up = backward
-                    const invertedProgress = 1 - progress
-                    setScrollProgress(invertedProgress)
+                    setScrollProgress(progress)
                     const duration = video.duration || 0
 
                     if (duration > 0) {
-                        const targetTime = invertedProgress * duration
+                        const targetTime = progress * duration
 
                         if (Math.abs(video.currentTime - targetTime) > 0.1) {
                             video.currentTime = targetTime
@@ -146,15 +134,32 @@ export function MainScene() {
         const windowHeight = window.innerHeight
         const scrollDistance = containerHeight - windowHeight
 
-        // Invert scroll position to match the inverted video progress
-        const invertedScrollPosition = 1 - scrollPosition
-        const targetScroll = scrollDistance * invertedScrollPosition
+        const targetScroll = scrollDistance * scrollPosition
 
         window.scrollTo({
             top: targetScroll,
             behavior: 'smooth'
         })
     }, [])
+
+    const handleInstructionsClose = useCallback(() => {
+        setShowInstructions(false)
+        setHasShownInitialHelp(true)
+    }, [])
+
+    const handleHelpClick = useCallback(() => {
+        setShowInstructions(true)
+    }, [])
+
+    useEffect(() => {
+        if (!hasShownInitialHelp) {
+            const timer = setTimeout(() => {
+                setShowInstructions(true)
+            }, 1000)
+
+            return () => clearTimeout(timer)
+        }
+    }, [hasShownInitialHelp])
 
     return (
         <div className="main-scene" ref={containerRef}>
@@ -172,10 +177,17 @@ export function MainScene() {
             <NavigationMap
                 onNavigate={handleNavigate}
                 currentProgress={scrollProgress}
+                onHelpClick={handleHelpClick}
             />
 
             <SceneNavigation
                 onNavigate={handleNavigate}
+            />
+
+            <InstructionsModal
+                isVisible={showInstructions}
+                onClose={handleInstructionsClose}
+                isAutoShow={!hasShownInitialHelp}
             />
         </div>
     )
