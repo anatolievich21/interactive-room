@@ -69,7 +69,7 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
             tl.to([barRef.current, textRef.current], {
                 opacity: 0,
                 y: -30,
-                duration: 0.8,
+                duration: 0.6,
                 ease: 'power2.in',
                 stagger: 0.1
             })
@@ -82,7 +82,7 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
                 }, '-=0.3')
                 .to('.loading-screen', {
                     opacity: 0,
-                    duration: 1,
+                    duration: 0.6,
                     ease: 'power2.in',
                     onComplete
                 })

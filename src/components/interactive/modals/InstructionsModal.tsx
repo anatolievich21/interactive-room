@@ -156,9 +156,9 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
 
         setIsAnimating(true)
         gsap.to(containerRef.current, {
-            opacity: 0,
-            scale: 0.9,
+            scale: 0,
             y: 20,
+            rotation: 5,
             duration: 0.3,
             ease: 'power2.in',
             onComplete: () => {
@@ -175,9 +175,9 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
 
         setIsAnimating(true)
         gsap.to(containerRef.current, {
-            opacity: 0,
-            scale: 0.9,
+            scale: 0,
             y: 20,
+            rotation: 5,
             duration: 0.3,
             ease: 'power2.in',
             onComplete: () => {
