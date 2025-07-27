@@ -1,6 +1,8 @@
 import { useEffect, useRef, useCallback, useState, useLayoutEffect } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { NavigationMap } from '../interactive/NavigationMap'
+import SceneNavigation from '../interactive/SceneNavigation'
 import './MainScene.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -9,6 +11,7 @@ export function MainScene() {
     const videoRef = useRef<HTMLVideoElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
     const [isMouseInside, setIsMouseInside] = useState(false)
+    const [scrollProgress, setScrollProgress] = useState(0)
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -92,20 +95,14 @@ export function MainScene() {
                 trigger: container,
                 start: 'top top',
                 end: 'bottom bottom',
-                scrub: 0.1,
+                scrub: 1,
                 onUpdate: (self) => {
                     const progress = self.progress
+                    setScrollProgress(progress)
                     const duration = video.duration || 0
 
                     if (duration > 0) {
-                        let targetTime: number
-
-                        if (progress > 0.5) {
-                            const reverseProgress = 1 - (progress - 0.5) * 2
-                            targetTime = reverseProgress * duration
-                        } else {
-                            targetTime = progress * 2 * duration
-                        }
+                        const targetTime = progress * duration
 
                         if (Math.abs(video.currentTime - targetTime) > 0.1) {
                             video.currentTime = targetTime
@@ -139,6 +136,22 @@ export function MainScene() {
         }
     }, [isMouseInside, handleMouseMove])
 
+    const handleNavigate = useCallback((scrollPosition: number) => {
+        const container = containerRef.current
+        if (!container) return
+
+        const containerHeight = container.offsetHeight
+        const windowHeight = window.innerHeight
+        const scrollDistance = containerHeight - windowHeight
+
+        const targetScroll = scrollDistance * scrollPosition
+
+        window.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+        })
+    }, [])
+
     return (
         <div className="main-scene" ref={containerRef}>
             <video
@@ -150,6 +163,16 @@ export function MainScene() {
             >
                 <source src="/videos/main-scene.mp4" type="video/mp4" />
             </video>
+
+
+            <NavigationMap
+                onNavigate={handleNavigate}
+                currentProgress={scrollProgress}
+            />
+
+            <SceneNavigation
+                onNavigate={handleNavigate}
+            />
         </div>
     )
 } 

@@ -17,8 +17,8 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
         const tl = gsap.timeline()
 
         tl.fromTo('.loading-bar-container',
-            { opacity: 0, scaleX: 0 },
-            { opacity: 1, scaleX: 1, duration: 0.8, ease: 'power2.out' }
+            { opacity: 0 },
+            { opacity: 1, duration: 0.8, ease: 'power2.out' }
         )
             .fromTo(textRef.current,
                 { opacity: 0, y: 20 },
@@ -73,6 +73,13 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
                 ease: 'power2.in',
                 stagger: 0.1
             })
+                .to('.loading-content', {
+                    opacity: 0,
+                    scale: 0.95,
+                    y: -20,
+                    duration: 0.6,
+                    ease: 'power2.in'
+                }, '-=0.3')
                 .to('.loading-screen', {
                     opacity: 0,
                     duration: 1,

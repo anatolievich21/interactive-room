@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { LoadingScreen } from './components/LoadingScreen'
-import { StartScene } from './components/StartScene'
-import { MainScene } from './components/MainScene'
+import { LoadingScreen } from './components/scenes/LoadingScreen'
+import { StartScene } from './components/scenes/StartScene'
+import { MainScene } from './components/scenes/MainScene'
 import { useVideoPreloader } from './hooks/useVideoPreloader'
 import './App.css'
 
