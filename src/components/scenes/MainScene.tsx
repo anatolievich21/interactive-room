@@ -1,9 +1,13 @@
-import { useEffect, useRef, useCallback, useState, useLayoutEffect } from 'react'
+import { useEffect, useRef, useCallback, useState, useLayoutEffect, useMemo } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { NavigationMap } from '../interactive/NavigationMap'
 import SceneNavigation from '../interactive/SceneNavigation'
 import { InstructionsModal } from '../interactive/InstructionsModal'
+import { VideoHighlights } from '../interactive/VideoHighlights'
+import { ObjectModal } from '../interactive/ObjectModal'
+import { objectData } from '../interactive/objectData'
+import type { ObjectInfo } from '../interactive/objectData'
 import './MainScene.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -15,6 +19,8 @@ export function MainScene() {
     const [scrollProgress, setScrollProgress] = useState(0)
     const [showInstructions, setShowInstructions] = useState(false)
     const [hasShownInitialHelp, setHasShownInitialHelp] = useState(false)
+    const [showObjectModal, setShowObjectModal] = useState(false)
+    const [selectedObject, setSelectedObject] = useState<ObjectInfo | null>(null)
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -151,6 +157,19 @@ export function MainScene() {
         setShowInstructions(true)
     }, [])
 
+    const handleObjectClick = useCallback((objectId: string) => {
+        const objectInfo = objectData[objectId]
+        if (objectInfo) {
+            setSelectedObject(objectInfo)
+            setShowObjectModal(true)
+        }
+    }, [])
+
+    const handleObjectModalClose = useCallback(() => {
+        setShowObjectModal(false)
+        setSelectedObject(null)
+    }, [])
+
     useEffect(() => {
         if (!hasShownInitialHelp) {
             const timer = setTimeout(() => {
@@ -160,6 +179,10 @@ export function MainScene() {
             return () => clearTimeout(timer)
         }
     }, [hasShownInitialHelp])
+
+    const shouldAutoShow = useMemo(() => {
+        return !hasShownInitialHelp && showInstructions
+    }, [hasShownInitialHelp, showInstructions])
 
     return (
         <div className="main-scene" ref={containerRef}>
@@ -172,6 +195,11 @@ export function MainScene() {
             >
                 <source src="/videos/main-scene.mp4" type="video/mp4" />
             </video>
+
+            <VideoHighlights
+                currentProgress={scrollProgress}
+                onObjectClick={handleObjectClick}
+            />
 
 
             <NavigationMap
@@ -187,7 +215,13 @@ export function MainScene() {
             <InstructionsModal
                 isVisible={showInstructions}
                 onClose={handleInstructionsClose}
-                isAutoShow={!hasShownInitialHelp}
+                isAutoShow={shouldAutoShow}
+            />
+
+            <ObjectModal
+                isVisible={showObjectModal}
+                onClose={handleObjectModalClose}
+                objectInfo={selectedObject}
             />
         </div>
     )

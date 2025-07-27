@@ -8,6 +8,10 @@ interface NavigationPoint {
     icon: string
     scrollPosition: number
     description: string
+    highlightRange: {
+        start: number
+        end: number
+    }
 }
 
 const navigationPoints: NavigationPoint[] = [
@@ -15,29 +19,33 @@ const navigationPoints: NavigationPoint[] = [
         id: 'sofa',
         name: 'Sofa',
         icon: '🛋️',
-        scrollPosition: 0.0,
-        description: 'Comfort zone'
+        scrollPosition: 0.025, // середина діапазону 0-5%
+        description: 'Comfort zone',
+        highlightRange: { start: 0.0, end: 0.05 }
     },
     {
         id: 'fireplace',
         name: 'Fireplace',
         icon: '🔥',
-        scrollPosition: 0.33,
-        description: 'Warm and cozy'
+        scrollPosition: 0.175, // середина діапазону 15-20%
+        description: 'Warm and cozy',
+        highlightRange: { start: 0.15, end: 0.20 }
     },
     {
         id: 'tv',
         name: 'TV',
         icon: '📺',
-        scrollPosition: 0.66,
-        description: 'Entertainment hub'
+        scrollPosition: 0.35, // середина діапазону 30-40%
+        description: 'Entertainment hub',
+        highlightRange: { start: 0.30, end: 0.40 }
     },
     {
         id: 'bookshelf',
         name: 'Bookshelf',
         icon: '📚',
-        scrollPosition: 1.0,
-        description: 'Knowledge corner'
+        scrollPosition: 0.625, // середина діапазону 60-65%
+        description: 'Knowledge corner',
+        highlightRange: { start: 0.60, end: 0.65 }
     }
 ]
 
@@ -52,6 +60,12 @@ export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: Navi
     const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
     const toggleRef = useRef<HTMLButtonElement>(null)
     const pointsRef = useRef<HTMLDivElement>(null)
+
+    // Визначаємо активний об'єкт на основі поточного прогресу
+    const activePoint = navigationPoints.find(point =>
+        currentProgress >= point.highlightRange.start &&
+        currentProgress <= point.highlightRange.end
+    )
 
     const handlePointClick = (point: NavigationPoint) => {
         onNavigate(point.scrollPosition)
@@ -153,12 +167,14 @@ export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: Navi
 
                     <div className="points-list">
                         {navigationPoints.map((point) => {
-                            const isActive = Math.abs(currentProgress - point.scrollPosition) < 0.1
+                            const isActive = activePoint?.id === point.id
+                            const isInHighlightRange = currentProgress >= point.highlightRange.start &&
+                                currentProgress <= point.highlightRange.end
 
                             return (
                                 <button
                                     key={point.id}
-                                    className={`navigation-point ${isActive ? 'active' : ''}`}
+                                    className={`navigation-point ${isActive ? 'active' : ''} ${isInHighlightRange ? 'highlighted' : ''}`}
                                     onClick={() => handlePointClick(point)}
                                     onMouseEnter={() => setHoveredPoint(point.id)}
                                     onMouseLeave={() => setHoveredPoint(null)}
@@ -172,6 +188,7 @@ export function NavigationMap({ onNavigate, currentProgress, onHelpClick }: Navi
                                         )}
                                     </div>
                                     {isActive && <div className="active-indicator" />}
+                                    {isInHighlightRange && <div className="highlight-pulse" />}
                                 </button>
                             )
                         })}

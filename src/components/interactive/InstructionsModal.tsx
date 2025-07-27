@@ -17,27 +17,27 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
     const instructions = useMemo(() => [
         {
             title: "Welcome to Your Interactive Room!",
-            description: "Explore every corner of your perfect space with intuitive navigation.",
+            description: "Experience your perfect space through an immersive video journey. Navigate seamlessly through every corner.",
             icon: "🏠",
-            details: "Scroll up and down to move through the room"
+            details: "Scroll to explore the entire room"
         },
         {
-            title: "Navigation Map",
-            description: "Use the navigation map in the top-right corner to jump to specific areas.",
+            title: "Smart Navigation",
+            description: "Use the navigation map to instantly jump to specific areas: sofa, fireplace, TV, and bookshelf.",
             icon: "🗺️",
-            details: "Click the menu icon to open navigation"
+            details: "Click the menu icon (☰) in the top-right corner"
         },
         {
-            title: "Interactive Elements",
-            description: "Look for highlighted areas and click on them to learn more.",
+            title: "Interactive Highlights",
+            description: "Watch for automatic highlights that appear when you reach specific areas in the room.",
             icon: "✨",
-            details: "Hotspots will appear on interactive objects"
+            details: "Objects will glow when you're in their viewing range"
         },
         {
-            title: "Mouse Movement",
-            description: "Move your mouse over the video for dynamic camera effects.",
+            title: "Dynamic Camera Effects",
+            description: "Move your mouse over the video to experience realistic camera movements and depth.",
             icon: "🖱️",
-            details: "Hover to see parallax effects"
+            details: "Hover anywhere on the video for parallax effects"
         }
     ], [])
 
@@ -45,34 +45,30 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
         if (isVisible && containerRef.current) {
             gsap.killTweensOf(containerRef.current)
 
+            gsap.set(containerRef.current, {
+                opacity: 0,
+                scale: isAutoShow ? 0.8 : 0.9,
+                y: isAutoShow ? 20 : 10
+            })
+
             setIsAnimating(true)
 
             if (isAutoShow) {
-                gsap.set(containerRef.current, {
-                    opacity: 0,
-                    scale: 0.8,
-                    y: 20
-                })
-
                 const timer = setTimeout(() => {
-                    gsap.to(containerRef.current, {
-                        opacity: 1,
-                        scale: 1,
-                        y: 0,
-                        duration: 0.8,
-                        ease: 'back.out(1.7)',
-                        onComplete: () => setIsAnimating(false)
-                    })
+                    if (containerRef.current && isVisible) {
+                        gsap.to(containerRef.current, {
+                            opacity: 1,
+                            scale: 1,
+                            y: 0,
+                            duration: 0.8,
+                            ease: 'back.out(1.7)',
+                            onComplete: () => setIsAnimating(false)
+                        })
+                    }
                 }, 1000)
 
                 return () => clearTimeout(timer)
             } else {
-                gsap.set(containerRef.current, {
-                    opacity: 0,
-                    scale: 0.9,
-                    y: 10
-                })
-
                 gsap.to(containerRef.current, {
                     opacity: 1,
                     scale: 1,
@@ -83,7 +79,7 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 })
             }
         }
-    }, [isVisible, isAutoShow])
+    }, [isVisible])
 
     useEffect(() => {
         if (!isVisible) {
@@ -91,23 +87,38 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
         }
     }, [isVisible])
 
+    useEffect(() => {
+        if (isVisible && isAutoShow && containerRef.current) {
+            gsap.set(containerRef.current, {
+                opacity: 0,
+                scale: 0.8,
+                y: 20
+            })
+        }
+    }, [isAutoShow])
+
     const handleNext = useCallback(() => {
         if (currentStep < 3) {
             setIsAnimating(true)
             gsap.to(contentRef.current, {
                 opacity: 0,
-                x: -20,
-                duration: 0.2,
+                x: -30,
+                scale: 0.95,
+                duration: 0.25,
                 ease: 'power2.in',
                 onComplete: () => {
                     setCurrentStep(currentStep + 1)
-                    gsap.to(contentRef.current, {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.3,
-                        ease: 'power2.out',
-                        onComplete: () => setIsAnimating(false)
-                    })
+                    gsap.fromTo(contentRef.current,
+                        { opacity: 0, x: 30, scale: 0.95 },
+                        {
+                            opacity: 1,
+                            x: 0,
+                            scale: 1,
+                            duration: 0.35,
+                            ease: 'back.out(1.7)',
+                            onComplete: () => setIsAnimating(false)
+                        }
+                    )
                 }
             })
         } else {
@@ -120,18 +131,23 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
             setIsAnimating(true)
             gsap.to(contentRef.current, {
                 opacity: 0,
-                x: 20,
-                duration: 0.2,
+                x: 30,
+                scale: 0.95,
+                duration: 0.25,
                 ease: 'power2.in',
                 onComplete: () => {
                     setCurrentStep(currentStep - 1)
-                    gsap.to(contentRef.current, {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.3,
-                        ease: 'power2.out',
-                        onComplete: () => setIsAnimating(false)
-                    })
+                    gsap.fromTo(contentRef.current,
+                        { opacity: 0, x: -30, scale: 0.95 },
+                        {
+                            opacity: 1,
+                            x: 0,
+                            scale: 1,
+                            duration: 0.35,
+                            ease: 'back.out(1.7)',
+                            onComplete: () => setIsAnimating(false)
+                        }
+                    )
                 }
             })
         }
@@ -206,17 +222,34 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                     </div>
 
                     <div className="progress-indicators">
-                        {instructions.map((_, index) => (
-                            <div
-                                key={index}
-                                className={`progress-dot ${index === currentStep ? 'active' : ''}`}
-                                onClick={() => {
-                                    if (!isAnimating) {
-                                        setCurrentStep(index)
-                                    }
-                                }}
-                            />
-                        ))}
+                        <div className="progress-text">
+                            Step {currentStep + 1} of {instructions.length}
+                        </div>
+                        <div className="progress-dots">
+                            {instructions.map((_, index) => (
+                                <div
+                                    key={index}
+                                    className={`progress-dot ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`}
+                                    onClick={() => {
+                                        if (!isAnimating) {
+                                            setCurrentStep(index)
+                                        }
+                                    }}
+                                >
+                                    {index < currentStep && (
+                                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M20 6L9 17L4 12"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
