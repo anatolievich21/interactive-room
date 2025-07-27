@@ -5,25 +5,33 @@ import { MainScene } from './components/scenes/MainScene'
 import { useVideoPreloader } from './hooks/useVideoPreloader'
 import './App.css'
 
-const VIDEO_URLS = [
-  '/videos/start-scene.mp4',
-  '/videos/main-scene.mp4'
-]
+const RESOURCE_CONFIG = {
+  videos: [
+    '/videos/start-scene.mp4',
+    '/videos/main-scene.mp4'
+  ],
+  images: [
+    '/images/start-scene-blur.png'
+  ],
+  css: []
+}
 
 function App() {
   const [isLoadingComplete, setIsLoadingComplete] = useState(false)
   const [isStartSceneComplete, setIsStartSceneComplete] = useState(false)
-  const { progress } = useVideoPreloader(VIDEO_URLS)
+  const { progress, isReady } = useVideoPreloader(RESOURCE_CONFIG)
 
   const handleLoadingComplete = () => {
-    setIsLoadingComplete(true)
+    if (isReady) {
+      setIsLoadingComplete(true)
+    }
   }
 
   const handleStartSceneComplete = () => {
     setIsStartSceneComplete(true)
   }
 
-  if (!isLoadingComplete) {
+  if (!isLoadingComplete || !isReady) {
     return (
       <LoadingScreen
         progress={progress}

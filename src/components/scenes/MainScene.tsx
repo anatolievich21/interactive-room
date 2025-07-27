@@ -8,6 +8,7 @@ import { ObjectModal } from '../interactive/modals/ObjectModal'
 import { EditModeIndicators } from '../interactive/indicators/EditModeIndicators'
 import { objectData } from '../interactive/data/objectData'
 import type { ObjectInfo } from '../interactive/data/objectData'
+
 import './MainScene.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -24,6 +25,8 @@ export function MainScene() {
     const [isEditMode, setIsEditMode] = useState(false)
     const [isNavigating, setIsNavigating] = useState(false)
     const [navigationTarget, setNavigationTarget] = useState<number | null>(null)
+
+
 
     const handleMouseLeave = useCallback(() => {
         setIsMouseInside(false)
@@ -131,6 +134,8 @@ export function MainScene() {
     }, [isMouseInside, handleMouseMove])
 
     const handleNavigate = useCallback((scrollPosition: number) => {
+        if (isNavigating) return
+
         const container = containerRef.current
         if (!container) return
 
@@ -148,12 +153,11 @@ export function MainScene() {
             behavior: 'smooth'
         })
 
-        // Reset navigation state after scroll completes
         setTimeout(() => {
             setIsNavigating(false)
             setNavigationTarget(null)
         }, 1000)
-    }, [])
+    }, [isNavigating])
 
     const handleInstructionsClose = useCallback(() => {
         setShowInstructions(false)

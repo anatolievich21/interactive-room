@@ -31,24 +31,12 @@ export function LoadingScreen({ progress, onComplete }: LoadingScreenProps) {
         const elapsedTime = Date.now() - startTime
         const minLoadingTime = 3000
 
-        if (progress >= 100 && elapsedTime < minLoadingTime) {
-            const remainingTime = minLoadingTime - elapsedTime
-            const progressStep = 100 / (remainingTime / 100)
+        setDisplayProgress(progress)
 
-            const interval = setInterval(() => {
-                setDisplayProgress(prev => {
-                    const newProgress = Math.min(prev + progressStep, 100)
-                    if (newProgress >= 100) {
-                        clearInterval(interval)
-                        return 100
-                    }
-                    return newProgress
-                })
+        if (progress >= 100 && elapsedTime >= minLoadingTime) {
+            setTimeout(() => {
+                setDisplayProgress(100)
             }, 100)
-
-            return () => clearInterval(interval)
-        } else {
-            setDisplayProgress(progress)
         }
     }, [progress, startTime])
 

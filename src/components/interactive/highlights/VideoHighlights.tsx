@@ -103,11 +103,9 @@ export function VideoHighlights({
             if (highlightElement) {
                 const left = parseFloat(highlightElement.style.left)
                 const top = parseFloat(highlightElement.style.top)
-
                 const containerRect = containerRectRef.current
                 const xPercent = (left / containerRect.width) * 100
                 const yPercent = (top / containerRect.height) * 100
-
                 const newPosition = { x: xPercent, y: yPercent }
 
                 highlightStorage.updatePosition(draggedHighlight, newPosition)
@@ -147,23 +145,17 @@ export function VideoHighlights({
             let isInRange = currentProgress >= highlight.highlightRange.start &&
                 currentProgress <= highlight.highlightRange.end
 
-            // If navigating, only show the target highlight
             if (isNavigating && navigationTarget !== null) {
                 const targetPoint = navigationPoints.find(point =>
                     Math.abs(navigationTarget - point.scrollPosition) < 0.01
                 )
                 isInRange = targetPoint?.id === highlight.id
-
-
             }
 
             let highlightElement = highlightsMap.current.get(highlight.id)
 
-
-
-            // Block normal highlight creation during navigation
             if (isNavigating && isInRange && !highlightElement) {
-                // Use GSAP timeline for delayed appearance
+
                 const tl = gsap.timeline()
                 tl.to({}, {
                     duration: 0.8,
@@ -246,14 +238,12 @@ export function VideoHighlights({
                 highlightsRef.current?.appendChild(highlightElement)
                 highlightsMap.current.set(highlight.id, highlightElement)
 
-                // Set initial state to prevent flash
                 gsap.set(highlightElement, {
                     opacity: 0,
                     scale: 0.5,
                     rotation: -10
                 })
 
-                // Animate in with delay for navigation
                 gsap.to(highlightElement, {
                     opacity: 1,
                     scale: 1,

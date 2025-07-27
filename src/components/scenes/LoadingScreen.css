@@ -80,6 +80,10 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
+
+
+
+
 @media (max-width: 768px) {
     .loading-content {
         width: 90vw;
