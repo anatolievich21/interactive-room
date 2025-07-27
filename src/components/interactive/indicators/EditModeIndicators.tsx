@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { highlightStorage } from '../../../utils/highlightStorage'
 import './EditModeIndicators.css'
 
@@ -7,13 +7,19 @@ interface EditModeIndicatorsProps {
 }
 
 export function EditModeIndicators({ isEditMode }: EditModeIndicatorsProps) {
+    const [showNotification, setShowNotification] = useState(false)
+
     const handleResetPositions = useCallback(() => {
         highlightStorage.resetPositions()
         window.location.reload()
     }, [])
 
     const handleSavePositions = useCallback(() => {
-        // Позиції зберігаються автоматично
+        setShowNotification(true)
+
+        setTimeout(() => {
+            setShowNotification(false)
+        }, 2000)
     }, [])
 
     if (!isEditMode) return null
@@ -54,6 +60,17 @@ export function EditModeIndicators({ isEditMode }: EditModeIndicatorsProps) {
                     Reset
                 </button>
             </div>
+
+            {showNotification && (
+                <div className="save-notification">
+                    <div className="notification-content">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17L4 12" />
+                        </svg>
+                        Changes saved successfully!
+                    </div>
+                </div>
+            )}
         </>
     )
 } 

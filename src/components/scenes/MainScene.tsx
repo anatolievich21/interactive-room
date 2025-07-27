@@ -215,6 +215,7 @@ export function MainScene() {
 
             <SceneNavigation
                 onNavigate={handleNavigate}
+                currentProgress={scrollProgress}
             />
 
             <InstructionsModal

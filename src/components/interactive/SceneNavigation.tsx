@@ -1,22 +1,40 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { navigationPoints } from './data/navigationData'
+import { highlightStorage } from '../../utils/highlightStorage'
 import './SceneNavigation.css'
 
 interface SceneNavigationProps {
     onNavigate: (scrollPosition: number) => void
+    currentProgress: number
 }
 
-const navigationPoints = [
-    { position: 0.1 },
-    { position: 0.3 },
-    { position: 0.5 },
-    { position: 0.7 },
-    { position: 0.9 }
-]
-
-export function SceneNavigation({ onNavigate }: SceneNavigationProps) {
+export function SceneNavigation({ onNavigate, currentProgress }: SceneNavigationProps) {
     const leftArrowRef = useRef<HTMLButtonElement>(null)
     const rightArrowRef = useRef<HTMLButtonElement>(null)
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+    const getActualScrollPosition = (point: typeof navigationPoints[0]): number => {
+        const savedPositions = highlightStorage.loadPositions()
+        const savedPosition = savedPositions.find(p => p.id === point.id)
+
+        if (savedPosition) {
+            return savedPosition.position.y / 100
+        }
+
+        return point.scrollPosition
+    }
+
+    useEffect(() => {
+        const currentPointIndex = navigationPoints.findIndex(point =>
+            currentProgress >= point.highlightRange.start &&
+            currentProgress <= point.highlightRange.end
+        )
+
+        if (currentPointIndex !== -1) {
+            setCurrentIndex(currentPointIndex)
+        }
+    }, [currentProgress])
 
     useEffect(() => {
         gsap.set(leftArrowRef.current, { x: -50, opacity: 0, scale: 0.8 })
@@ -50,9 +68,12 @@ export function SceneNavigation({ onNavigate }: SceneNavigationProps) {
     }, [])
 
     const handlePrevious = () => {
-        const randomIndex = Math.floor(Math.random() * navigationPoints.length)
-        const targetPosition = navigationPoints[randomIndex].position
-        onNavigate(targetPosition)
+        const newIndex = currentIndex > 0 ? currentIndex - 1 : navigationPoints.length - 1
+        const targetPoint = navigationPoints[newIndex]
+        const actualScrollPosition = getActualScrollPosition(targetPoint)
+
+        setCurrentIndex(newIndex)
+        onNavigate(actualScrollPosition)
 
         gsap.to(leftArrowRef.current, {
             scale: 0.9,
@@ -64,9 +85,12 @@ export function SceneNavigation({ onNavigate }: SceneNavigationProps) {
     }
 
     const handleNext = () => {
-        const randomIndex = Math.floor(Math.random() * navigationPoints.length)
-        const targetPosition = navigationPoints[randomIndex].position
-        onNavigate(targetPosition)
+        const newIndex = currentIndex < navigationPoints.length - 1 ? currentIndex + 1 : 0
+        const targetPoint = navigationPoints[newIndex]
+        const actualScrollPosition = getActualScrollPosition(targetPoint)
+
+        setCurrentIndex(newIndex)
+        onNavigate(actualScrollPosition)
 
         gsap.to(rightArrowRef.current, {
             scale: 0.9,

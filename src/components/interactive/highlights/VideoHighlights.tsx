@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { highlightStorage } from '../../../utils/highlightStorage'
 import './VideoHighlights.css'
@@ -66,6 +66,7 @@ export function VideoHighlights({
     const [draggedHighlight, setDraggedHighlight] = useState<string | null>(null)
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
     const [videoHighlights, setVideoHighlights] = useState<VideoHighlight[]>(defaultVideoHighlights)
+    const containerRectRef = useRef<DOMRect | null>(null)
 
     useEffect(() => {
         const savedPositions = highlightStorage.loadPositions()
@@ -81,14 +82,16 @@ export function VideoHighlights({
         }
     }, [])
 
-    const handleMouseDown = (e: React.MouseEvent, highlightId: string) => {
+    const handleMouseDown = useCallback((e: React.MouseEvent, highlightId: string) => {
         if (!isEditMode) return
 
         e.preventDefault()
         e.stopPropagation()
 
         const highlightElement = highlightsMap.current.get(highlightId)
-        if (!highlightElement) return
+        if (!highlightElement || !highlightsRef.current) return
+
+        containerRectRef.current = highlightsRef.current.getBoundingClientRect()
 
         const rect = highlightElement.getBoundingClientRect()
         const offsetX = e.clientX - rect.left
@@ -96,45 +99,56 @@ export function VideoHighlights({
 
         setDraggedHighlight(highlightId)
         setDragOffset({ x: offsetX, y: offsetY })
-    }
+    }, [isEditMode])
 
-    const handleMouseMove = (e: MouseEvent) => {
-        if (!draggedHighlight || !isEditMode) return
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!draggedHighlight || !isEditMode || !containerRectRef.current) return
 
         const highlightElement = highlightsMap.current.get(draggedHighlight)
-        if (!highlightElement || !highlightsRef.current) return
+        if (!highlightElement) return
 
-        const containerRect = highlightsRef.current.getBoundingClientRect()
-        const x = ((e.clientX - containerRect.left - dragOffset.x) / containerRect.width) * 100
-        const y = ((e.clientY - containerRect.top - dragOffset.y) / containerRect.height) * 100
+        const containerRect = containerRectRef.current
 
-        const clampedX = Math.max(5, Math.min(95, x))
-        const clampedY = Math.max(5, Math.min(95, y))
+        const x = e.clientX - containerRect.left - dragOffset.x
+        const y = e.clientY - containerRect.top - dragOffset.y
 
-        highlightElement.style.left = `${clampedX}%`
-        highlightElement.style.top = `${clampedY}%`
+        const clampedX = Math.max(0, Math.min(containerRect.width - 50, x))
+        const clampedY = Math.max(0, Math.min(containerRect.height - 50, y))
 
-        const highlight = videoHighlights.find(h => h.id === draggedHighlight)
-        if (highlight) {
-            const newPosition = { x: clampedX, y: clampedY }
+        highlightElement.style.left = `${clampedX}px`
+        highlightElement.style.top = `${clampedY}px`
+    }, [draggedHighlight, isEditMode, dragOffset.x, dragOffset.y])
 
-            highlightStorage.updatePosition(draggedHighlight, newPosition)
+    const handleMouseUp = useCallback(() => {
+        if (draggedHighlight && containerRectRef.current) {
+            const highlightElement = highlightsMap.current.get(draggedHighlight)
+            if (highlightElement) {
+                const left = parseFloat(highlightElement.style.left)
+                const top = parseFloat(highlightElement.style.top)
 
-            setVideoHighlights(prev => prev.map(h =>
-                h.id === draggedHighlight
-                    ? { ...h, position: newPosition }
-                    : h
-            ))
+                const containerRect = containerRectRef.current
+                const xPercent = (left / containerRect.width) * 100
+                const yPercent = (top / containerRect.height) * 100
 
-            if (onPositionChange) {
-                onPositionChange(draggedHighlight, newPosition)
+                const newPosition = { x: xPercent, y: yPercent }
+
+                highlightStorage.updatePosition(draggedHighlight, newPosition)
+
+                setVideoHighlights(prev => prev.map(h =>
+                    h.id === draggedHighlight
+                        ? { ...h, position: newPosition }
+                        : h
+                ))
+
+                if (onPositionChange) {
+                    onPositionChange(draggedHighlight, newPosition)
+                }
             }
         }
-    }
 
-    const handleMouseUp = () => {
         setDraggedHighlight(null)
-    }
+        containerRectRef.current = null
+    }, [draggedHighlight, onPositionChange])
 
     useEffect(() => {
         if (isEditMode) {
@@ -146,7 +160,7 @@ export function VideoHighlights({
                 document.removeEventListener('mouseup', handleMouseUp)
             }
         }
-    }, [draggedHighlight, isEditMode, dragOffset])
+    }, [isEditMode, handleMouseMove, handleMouseUp])
 
     useEffect(() => {
         if (!highlightsRef.current) return
@@ -216,7 +230,45 @@ export function VideoHighlights({
                 })
             }
         })
-    }, [currentProgress, isEditMode, videoHighlights])
+    }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown])
+
+    useEffect(() => {
+        highlightsMap.current.forEach((highlightElement, highlightId) => {
+            highlightElement.className = `video-highlight ${isEditMode ? 'edit-mode' : ''}`
+
+            const highlight = videoHighlights.find(h => h.id === highlightId)
+            if (highlight) {
+                highlightElement.innerHTML = `
+                    <div class="highlight-icon">${highlight.icon}</div>
+                    <div class="highlight-name">${highlight.name}</div>
+                    <div class="highlight-pulse-ring"></div>
+                    ${isEditMode ? '<div class="highlight-edit-indicator">✏️</div>' : ''}
+                `
+            }
+
+            if (isEditMode) {
+                highlightElement.style.cursor = 'grab'
+                const newElement = highlightElement.cloneNode(true) as HTMLDivElement
+                highlightElement.parentNode?.replaceChild(newElement, highlightElement)
+                highlightsMap.current.set(highlightId, newElement)
+
+                newElement.addEventListener('mousedown', (e) => {
+                    handleMouseDown(e as any, highlightId)
+                })
+            } else {
+                highlightElement.style.cursor = onObjectClick ? 'pointer' : 'default'
+                const newElement = highlightElement.cloneNode(true) as HTMLDivElement
+                highlightElement.parentNode?.replaceChild(newElement, highlightElement)
+                highlightsMap.current.set(highlightId, newElement)
+
+                if (onObjectClick) {
+                    newElement.addEventListener('click', () => {
+                        onObjectClick(highlightId)
+                    })
+                }
+            }
+        })
+    }, [isEditMode, onObjectClick, handleMouseDown, videoHighlights])
 
     useEffect(() => {
         return () => {

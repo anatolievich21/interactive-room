@@ -85,23 +85,13 @@ export function InstructionsModal({ isVisible, onClose, isAutoShow = false }: In
                 })
             }
         }
-    }, [isVisible])
+    }, [isVisible, isAutoShow])
 
     useEffect(() => {
         if (!isVisible) {
             setIsAnimating(false)
         }
     }, [isVisible])
-
-    useEffect(() => {
-        if (isVisible && isAutoShow && containerRef.current) {
-            gsap.set(containerRef.current, {
-                opacity: 0,
-                scale: 0.8,
-                y: 20
-            })
-        }
-    }, [isAutoShow])
 
     const handleNext = useCallback(() => {
         if (currentStep < 4) {
