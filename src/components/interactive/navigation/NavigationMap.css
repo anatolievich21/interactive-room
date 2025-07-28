@@ -11,6 +11,13 @@
     flex-direction: row;
     gap: 10px;
     align-items: center;
+    will-change: transform, opacity;
+}
+
+.navigation-controls>* {
+    transform: translateY(-50px);
+    opacity: 0;
+    scale: 0.8;
 }
 
 .navigation-points {

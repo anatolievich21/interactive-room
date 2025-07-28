@@ -45,15 +45,8 @@ export function MainScene() {
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    const shouldShowIndicator = useCallback(() => {
-        return !isMobile &&
-            !showInstructions &&
-            !showObjectModal &&
-            !isNavigating
-    }, [isMobile, showInstructions, showObjectModal, isNavigating])
-
     const startScrollIndicatorCycle = useCallback(() => {
-        if (!shouldShowIndicator()) return
+        if (isMobile || showInstructions || showObjectModal || isNavigating) return
 
         setShowScrollIndicator(true)
         hideTimeoutRef.current = window.setTimeout(() => {
@@ -61,23 +54,20 @@ export function MainScene() {
             setTimeout(() => {
                 setShowScrollIndicator(false)
                 setIsIndicatorHiding(false)
-                // Наступна поява через 10 секунд
                 scrollTimeoutRef.current = window.setTimeout(() => {
-                    if (shouldShowIndicator()) {
+                    if (!isMobile && !showInstructions && !showObjectModal && !isNavigating) {
                         setShowScrollIndicator(true)
                         hideTimeoutRef.current = window.setTimeout(() => {
                             setIsIndicatorHiding(true)
                             setTimeout(() => {
                                 setShowScrollIndicator(false)
                                 setIsIndicatorHiding(false)
-                                // Продовжуємо цикл
                                 scrollTimeoutRef.current = window.setTimeout(() => {
                                     startScrollIndicatorCycle()
                                 }, 10000)
                             }, 400)
                         }, 3000)
                     } else {
-                        // Якщо не можемо показати, спробуємо знову через 10 секунд
                         scrollTimeoutRef.current = window.setTimeout(() => {
                             startScrollIndicatorCycle()
                         }, 10000)
@@ -85,7 +75,7 @@ export function MainScene() {
                 }, 10000)
             }, 400)
         }, 3000)
-    }, [shouldShowIndicator])
+    }, [isMobile, showInstructions, showObjectModal, isNavigating])
 
     const resetScrollIndicator = useCallback(() => {
         if (showScrollIndicator) {
@@ -104,14 +94,15 @@ export function MainScene() {
         scrollTimeoutRef.current = window.setTimeout(() => {
             startScrollIndicatorCycle()
         }, 10000)
-    }, [showScrollIndicator, startScrollIndicatorCycle])
+    }, [showScrollIndicator])
 
     useEffect(() => {
         gsap.set('.main-scene', { opacity: 0 })
         gsap.to('.main-scene', {
             opacity: 1,
             duration: 0.8,
-            ease: 'power2.out'
+            ease: 'power2.out',
+            overwrite: 'auto'
         })
     }, [])
 
@@ -167,10 +158,15 @@ export function MainScene() {
 
     const handleScroll = useCallback(() => {
         resetScrollIndicator()
-    }, [resetScrollIndicator])
+    }, [])
 
     const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
-        setMousePosition({ x: e.clientX, y: e.clientY })
+        setMousePosition(prev => {
+            if (Math.abs(prev.x - e.clientX) > 10 || Math.abs(prev.y - e.clientY) > 10) {
+                return { x: e.clientX, y: e.clientY }
+            }
+            return prev
+        })
     }, [])
 
     useLayoutEffect(() => {
@@ -191,7 +187,14 @@ export function MainScene() {
                 end: 'bottom bottom',
                 scrub: 1,
                 onUpdate: ({ progress }) => {
-                    setScrollProgress(progress)
+                    // Оптимізація: оновлюємо тільки якщо зміна достатньо велика
+                    setScrollProgress(prev => {
+                        if (Math.abs(prev - progress) > 0.01) {
+                            return progress
+                        }
+                        return prev
+                    })
+
                     const duration = video.duration || 0
 
                     if (duration > 0) {
@@ -212,29 +215,28 @@ export function MainScene() {
         })
 
         return () => ctx.revert()
-    }, [handleMouseEnter, handleMouseLeave])
+    }, [])
 
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
 
+        const handleMouseMoveEvent = (e: MouseEvent) => handleMouseMove(e)
+
         if (isMouseInside) {
-            container.addEventListener('mousemove', handleMouseMove, { passive: true })
+            container.addEventListener('mousemove', handleMouseMoveEvent, { passive: true })
         } else {
-            container.removeEventListener('mousemove', handleMouseMove)
+            container.removeEventListener('mousemove', handleMouseMoveEvent)
         }
 
         return () => {
-            container.removeEventListener('mousemove', handleMouseMove)
+            container.removeEventListener('mousemove', handleMouseMoveEvent)
         }
-    }, [isMouseInside, handleMouseMove])
+    }, [isMouseInside])
 
     const handleNavigate = useCallback((scrollPosition: number) => {
         const container = containerRef.current
         if (!container) return
-
-        // Якщо вже навігуємо до цієї позиції, не робимо нічого
-        if (isNavigating && navigationTarget === scrollPosition) return
 
         setIsNavigating(true)
         setNavigationTarget(scrollPosition)
@@ -250,12 +252,11 @@ export function MainScene() {
             behavior: 'smooth'
         })
 
-        // Збільшуємо час до 2 секунд щоб хайлайт встиг з'явитися
         setTimeout(() => {
             setIsNavigating(false)
             setNavigationTarget(null)
         }, 2000)
-    }, [isNavigating, navigationTarget])
+    }, [])
 
     const handleInstructionsClose = useCallback(() => {
         setShowInstructions(false)
@@ -272,7 +273,7 @@ export function MainScene() {
                 }, 400)
             }
         }
-    }, [showInstructions, showObjectModal, showScrollIndicator])
+    }, [showInstructions, showObjectModal])
 
     const handleHelpClick = useCallback(() => {
         setShowInstructions(true)
@@ -286,14 +287,14 @@ export function MainScene() {
         }
 
         resetScrollIndicator()
-    }, [resetScrollIndicator])
+    }, [])
 
     const handleObjectModalClose = useCallback(() => {
         setShowObjectModal(false)
         setSelectedObject(null)
 
         resetScrollIndicator()
-    }, [resetScrollIndicator])
+    }, [])
 
     const handleEditModeToggle = useCallback((editMode: boolean) => {
         setIsEditMode(editMode)
@@ -307,23 +308,26 @@ export function MainScene() {
 
             return () => clearTimeout(timer)
         }
-    }, [hasShownInitialHelp])
+    }, [])
 
     const shouldAutoShow = useMemo(() => {
         return !hasShownInitialHelp && showInstructions
     }, [hasShownInitialHelp, showInstructions])
 
     useEffect(() => {
-        window.addEventListener('scroll', handleScroll)
-        window.addEventListener('mousemove', handleGlobalMouseMove)
+        const handleScrollEvent = () => handleScroll()
+        const handleGlobalMouseMoveEvent = (e: MouseEvent) => handleGlobalMouseMove(e)
+
+        window.addEventListener('scroll', handleScrollEvent)
+        window.addEventListener('mousemove', handleGlobalMouseMoveEvent)
 
         scrollTimeoutRef.current = window.setTimeout(() => {
             startScrollIndicatorCycle()
         }, 10000)
 
         return () => {
-            window.removeEventListener('scroll', handleScroll)
-            window.removeEventListener('mousemove', handleGlobalMouseMove)
+            window.removeEventListener('scroll', handleScrollEvent)
+            window.removeEventListener('mousemove', handleGlobalMouseMoveEvent)
             if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current)
             }
@@ -331,7 +335,7 @@ export function MainScene() {
                 clearTimeout(hideTimeoutRef.current)
             }
         }
-    }, [handleScroll, handleGlobalMouseMove, startScrollIndicatorCycle])
+    }, [])
 
     return (
         <div className="main-scene" ref={containerRef}>
@@ -380,7 +384,7 @@ export function MainScene() {
                 objectInfo={selectedObject}
             />
 
-            {showScrollIndicator && shouldShowIndicator() && (
+            {showScrollIndicator && !isMobile && !showInstructions && !showObjectModal && !isNavigating && (
                 <div
                     className={`scroll-indicator ${isIndicatorHiding ? 'hiding' : ''}`}
                     style={{

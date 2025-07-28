@@ -26,6 +26,7 @@ export function NavigationMap({
     const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
     const toggleRef = useRef<HTMLButtonElement>(null)
     const pointsRef = useRef<HTMLDivElement>(null)
+    const controlsRef = useRef<HTMLDivElement>(null)
     const { navigationPoints } = useNavigationData()
 
     const activePoint = navigationPoints.find(point =>
@@ -56,6 +57,30 @@ export function NavigationMap({
             repeat: 1
         })
     }
+
+    useEffect(() => {
+        if (controlsRef.current) {
+            const buttons = controlsRef.current.querySelectorAll('.navigation-controls > *')
+
+            gsap.set(buttons, {
+                y: -50,
+                opacity: 0,
+                scale: 0.8
+            })
+
+            const tl = gsap.timeline()
+
+            tl.to(buttons, {
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 0.6,
+                stagger: 0.15,
+                ease: "back.out(1.7)",
+                delay: 1.0
+            })
+        }
+    }, [])
 
     useEffect(() => {
         if (pointsRef.current) {
@@ -98,7 +123,7 @@ export function NavigationMap({
 
     return (
         <div className={`navigation-map ${isExpanded ? 'expanded' : ''}`}>
-            <div className="navigation-controls">
+            <div className="navigation-controls" ref={controlsRef}>
                 <HelpButton onClick={onHelpClick} />
 
                 {onEditModeToggle && (
