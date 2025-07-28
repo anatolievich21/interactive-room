@@ -33,28 +33,28 @@ const baseNavigationData = [
         name: 'Sofa',
         icon: '🛋️',
         description: 'Comfort zone',
-        defaultPosition: { x: 25, y: 70 }
+        defaultPosition: { x: 64, y: 78 }
     },
     {
         id: 'fireplace',
         name: 'Fireplace',
         icon: '🔥',
         description: 'Warm and cozy',
-        defaultPosition: { x: 75, y: 60 }
+        defaultPosition: { x: 44, y: 67 }
     },
     {
         id: 'tv',
         name: 'TV',
         icon: '📺',
         description: 'Entertainment hub',
-        defaultPosition: { x: 50, y: 30 }
+        defaultPosition: { x: 25, y: 66 }
     },
     {
         id: 'bookshelf',
         name: 'Bookshelf',
         icon: '📚',
         description: 'Knowledge corner',
-        defaultPosition: { x: 20, y: 40 }
+        defaultPosition: { x: 90, y: 53 }
     }
 ]
 

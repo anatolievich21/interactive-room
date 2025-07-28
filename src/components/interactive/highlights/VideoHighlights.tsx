@@ -67,6 +67,26 @@ export function VideoHighlights({
         setDragOffset({ x: offsetX, y: offsetY })
     }, [isEditMode])
 
+    const handleTouchStart = useCallback((e: React.TouchEvent, highlightId: string) => {
+        if (!isEditMode) return
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        const highlightElement = highlightsMap.current.get(highlightId)
+        if (!highlightElement || !highlightsRef.current) return
+
+        containerRectRef.current = highlightsRef.current.getBoundingClientRect()
+
+        const touch = e.touches[0]
+        const rect = highlightElement.getBoundingClientRect()
+        const offsetX = touch.clientX - rect.left
+        const offsetY = touch.clientY - rect.top
+
+        setDraggedHighlight(highlightId)
+        setDragOffset({ x: offsetX, y: offsetY })
+    }, [isEditMode])
+
     const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!draggedHighlight || !isEditMode || !containerRectRef.current) return
 
@@ -77,6 +97,27 @@ export function VideoHighlights({
 
         const x = e.clientX - containerRect.left - dragOffset.x
         const y = e.clientY - containerRect.top - dragOffset.y
+
+        const clampedX = Math.max(0, Math.min(containerRect.width - 50, x))
+        const clampedY = Math.max(0, Math.min(containerRect.height - 50, y))
+
+        highlightElement.style.left = `${clampedX}px`
+        highlightElement.style.top = `${clampedY}px`
+    }, [draggedHighlight, isEditMode, dragOffset.x, dragOffset.y])
+
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+        if (!draggedHighlight || !isEditMode || !containerRectRef.current) return
+
+        e.preventDefault()
+
+        const highlightElement = highlightsMap.current.get(draggedHighlight)
+        if (!highlightElement) return
+
+        const touch = e.touches[0]
+        const containerRect = containerRectRef.current
+
+        const x = touch.clientX - containerRect.left - dragOffset.x
+        const y = touch.clientY - containerRect.top - dragOffset.y
 
         const clampedX = Math.max(0, Math.min(containerRect.width - 50, x))
         const clampedY = Math.max(0, Math.min(containerRect.height - 50, y))
@@ -118,13 +159,17 @@ export function VideoHighlights({
         if (isEditMode) {
             document.addEventListener('mousemove', handleMouseMove)
             document.addEventListener('mouseup', handleMouseUp)
+            document.addEventListener('touchmove', handleTouchMove)
+            document.addEventListener('touchend', handleMouseUp)
 
             return () => {
                 document.removeEventListener('mousemove', handleMouseMove)
                 document.removeEventListener('mouseup', handleMouseUp)
+                document.removeEventListener('touchmove', handleTouchMove)
+                document.removeEventListener('touchend', handleMouseUp)
             }
         }
-    }, [isEditMode, handleMouseMove, handleMouseUp])
+    }, [isEditMode, handleMouseMove, handleMouseUp, handleTouchMove])
 
     useEffect(() => {
         if (!highlightsRef.current) return
@@ -172,6 +217,9 @@ export function VideoHighlights({
                                 newHighlightElement.style.cursor = 'grab'
                                 newHighlightElement.addEventListener('mousedown', (e) => {
                                     handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
+                                })
+                                newHighlightElement.addEventListener('touchstart', (e) => {
+                                    handleTouchStart(e as unknown as React.TouchEvent, highlight.id)
                                 })
                             }
 
@@ -221,6 +269,9 @@ export function VideoHighlights({
                     highlightElement.style.cursor = 'grab'
                     highlightElement.addEventListener('mousedown', (e) => {
                         handleMouseDown(e as unknown as React.MouseEvent, highlight.id)
+                    })
+                    highlightElement.addEventListener('touchstart', (e) => {
+                        handleTouchStart(e as unknown as React.TouchEvent, highlight.id)
                     })
                 }
 
