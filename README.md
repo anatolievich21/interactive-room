@@ -1,40 +1,133 @@
-# Front-End Developer Trial Task: Immersive Cinematic UI
+# Interactive Relaxation Room Experience
 
-## Objective
-Your goal is to showcase your ability to build a modern, non-standard, and interactive user interface. We want to see your problem-solving skills and your eye for detail in creating polished, engaging web experiences.
+A modern, cinematic web interface with scroll-controlled animations and interactive highlights.
 
-## The Task
-Reproduce the core user interface and scroll-driven experience of this cinematic website:
-**[https://wakanda-forever-master.dogstudio-dev.co/zerolimits](https://wakanda-forever-master.dogstudio-dev.co/zerolimits)**
+**🌐 Live Demo: [https://interactive-room-seven.vercel.app/](https://interactive-room-seven.vercel.app/)**
 
-Your solution should be as close as possible to the original in terms of layout, typography, and animations.
+## Features
 
-## The Creative Challenge (Replacing the 3D)
-The original site is built around a complex 3D animation. **You are not required to replicate the 3D model.**
+- **Interactive Video Experience**: Scroll-controlled video playback with smooth transitions
+- **Smart Highlights**: Interactive objects that appear at specific video timestamps
+- **Edit Mode**: Drag-and-drop functionality to reposition highlights
+- **Navigation System**: Multiple ways to navigate between highlights (arrows, map, list)
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Smooth Animations**: GSAP-powered animations for all interactions
+- **Resource Preloading**: Efficient loading of videos, images, and assets
+- **Persistent Storage**: Highlight positions saved in localStorage
 
-Instead, we want you to creatively replace it with a solution that maintains the site's immersive and cinematic feel. This is where you can demonstrate your problem-solving skills. Some ideas include:
+## Technologies
 
-*   A high-quality, looping video background (AI-generated or stock).
-*   An abstract generative animation using CSS, Canvas, or WebGL (e.g., particles, shaders).
-*   A clever parallax effect with 2D image layers.
-*   Any other creative solution you think fits the aesthetic.
+- **React 19** - Modern React with hooks and functional components
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and development server
+- **GSAP (GreenSock Animation Platform)** - Professional animations and ScrollTrigger
+- **CSS3** - Modern styling with animations and responsive design
 
-## Key Areas to Focus On
+## Project Structure
 
-*   **Scroll-driven Animations:** The synchronization of scrolling with element transitions (fade, move, scale) is the most critical aspect.
-*   **Layout & Typography:** Match the visual structure, font styles, and spacing.
-*   **Performance:** The experience should be smooth and responsive.
-*   **Overall Atmosphere:** Capture the "feel" of the original site.
+```
+src/
+├── components/
+│   ├── interactive/
+│   │   ├── buttons/          # UI buttons (Help, Edit, Burger)
+│   │   ├── highlights/       # Video highlight components
+│   │   ├── indicators/       # Status indicators
+│   │   ├── modals/          # Modal components
+│   │   ├── navigation/      # Navigation components
+│   │   └── data/           # Data and configuration
+│   ├── scenes/             # Main scene components
+│   └── ui/                 # Shared UI components
+├── hooks/                  # Custom React hooks
+├── utils/                  # Utility functions
+└── assets/                 # Static assets
+```
 
-## Technical Requirements
+## Installation
 
-*   You are free to use any modern front-end framework (React, Vue, Svelte) or vanilla JavaScript.
-*   Animation libraries like GSAP, Framer Motion, or ScrollTrigger are encouraged.
-*   The code must be your own.
+```bash
+npm install
+```
 
-## Deliverables
+## Development
 
-1.  **Source Code:** Commit all your final source code to this repository.
-2.  **Live Deployment:** Add the link to your live, deployed solution in the `report.md` file.
+```bash
+npm run dev
+```
 
-We are excited to see your interpretation and how you tackle the challenge.
+## Build
+
+```bash
+npm run build
+```
+
+## Preview Build
+
+```bash
+npm run preview
+```
+
+## Linting
+
+```bash
+npm run lint
+```
+
+## Key Components
+
+### Interactive Elements
+- **VideoHighlights**: Renders interactive highlights with drag-and-drop editing
+- **NavigationMap**: List-based navigation between highlights
+- **SceneNavigation**: Arrow-based navigation controls
+- **InstructionsModal**: Step-by-step user guidance
+- **ObjectModal**: Detailed object information display
+
+### Scene Management
+- **LoadingScreen**: Preload progress and initial experience
+- **StartScene**: Introduction with video background
+- **MainScene**: Main interactive experience with video and highlights
+
+### Custom Hooks
+- **useNavigationData**: Centralized navigation and highlight data management
+- **useVideoPreloader**: Resource preloading for smooth experience
+
+## Features in Detail
+
+### Edit Mode
+- Toggle edit mode with dedicated button
+- Drag highlights to reposition them
+- Save/Reset functionality with visual feedback
+- Persistent storage of positions
+
+### Navigation
+- Multiple navigation methods (arrows, map, list)
+- Smooth transitions between highlights
+- Prevents intermediate highlight flashing
+- Synchronized with video playback
+
+### Animations
+- GSAP-powered smooth animations
+- Context-based animation management
+- Proper cleanup to prevent memory leaks
+- Staggered and sequenced animations
+
+## Browser Support
+
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
+
+## Performance
+
+- Optimized video loading and playback
+- Efficient DOM manipulation
+- Debounced scroll events
+- Resource preloading for smooth experience
+
+## Contributing
+
+1. Follow TypeScript best practices
+2. Use functional components with hooks
+3. Maintain consistent code style
+4. Add proper error handling
+5. Test on multiple devices and browsers
