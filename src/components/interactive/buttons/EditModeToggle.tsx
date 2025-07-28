@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import './ButtonBase.css'
-import './EditModeToggle.css'
 
 interface EditModeToggleProps {
     isEditMode: boolean

@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { highlightStorage } from '../utils/highlightStorage'
 
 export interface NavigationPoint {
     id: string
@@ -66,6 +67,35 @@ const defaultTimeRanges = {
 
 export function useNavigationData() {
     const [timeRanges, setTimeRanges] = useState(defaultTimeRanges)
+    const [defaultPositions, setDefaultPositions] = useState(() => {
+        const savedDefaults = highlightStorage.getDefaultPositions()
+        const savedPositions = highlightStorage.loadPositions()
+        const positions: Record<string, { x: number, y: number }> = {}
+
+        baseNavigationData.forEach(item => {
+            const savedDefault = savedDefaults.find(p => p.id === item.id)
+            if (savedDefault) {
+                positions[item.id] = savedDefault.position
+            } else {
+                const savedPosition = savedPositions.find(p => p.id === item.id)
+                positions[item.id] = savedPosition ? savedPosition.position : item.defaultPosition
+            }
+        })
+
+        return positions
+    })
+
+    useEffect(() => {
+        const savedPositions = highlightStorage.loadPositions()
+        const newPositions: Record<string, { x: number, y: number }> = {}
+
+        baseNavigationData.forEach(item => {
+            const savedPosition = savedPositions.find(p => p.id === item.id)
+            newPositions[item.id] = savedPosition ? savedPosition.position : item.defaultPosition
+        })
+
+        setDefaultPositions(newPositions)
+    }, [])
 
     const navigationPoints = useMemo((): NavigationPoint[] => {
         return baseNavigationData.map(item => {
@@ -86,16 +116,17 @@ export function useNavigationData() {
     const videoHighlights = useMemo((): VideoHighlight[] => {
         return baseNavigationData.map(item => {
             const range = timeRanges[item.id as keyof typeof timeRanges]
+            const position = defaultPositions[item.id] || item.defaultPosition
 
             return {
                 id: item.id,
                 name: item.name,
                 icon: item.icon,
                 highlightRange: range,
-                position: item.defaultPosition
+                position: position
             }
         })
-    }, [timeRanges])
+    }, [timeRanges, defaultPositions])
 
     const updateTimeRange = useCallback((id: string, newRange: { start: number, end: number }) => {
         setTimeRanges(prev => ({
@@ -108,11 +139,24 @@ export function useNavigationData() {
         setTimeRanges(defaultTimeRanges)
     }, [])
 
+    const updateDefaultPositions = useCallback(() => {
+        const savedPositions = highlightStorage.loadPositions()
+        const newPositions: Record<string, { x: number, y: number }> = {}
+
+        baseNavigationData.forEach(item => {
+            const savedPosition = savedPositions.find(p => p.id === item.id)
+            newPositions[item.id] = savedPosition ? savedPosition.position : item.defaultPosition
+        })
+
+        setDefaultPositions(newPositions)
+    }, [])
+
     return {
         navigationPoints,
         videoHighlights,
         timeRanges,
         updateTimeRange,
-        resetTimeRanges
+        resetTimeRanges,
+        updateDefaultPositions
     }
 } 

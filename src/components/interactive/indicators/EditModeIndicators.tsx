@@ -15,6 +15,7 @@ export function EditModeIndicators({ isEditMode }: EditModeIndicatorsProps) {
     }, [])
 
     const handleSavePositions = useCallback(() => {
+        highlightStorage.saveCurrentPositionsAsDefault()
         setShowNotification(true)
 
         setTimeout(() => {
@@ -67,7 +68,7 @@ export function EditModeIndicators({ isEditMode }: EditModeIndicatorsProps) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17L4 12" />
                         </svg>
-                        Changes saved successfully!
+                        Positions saved as defaults!
                     </div>
                 </div>
             )}

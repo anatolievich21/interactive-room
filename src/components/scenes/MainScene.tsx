@@ -30,38 +30,62 @@ export function MainScene() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const scrollTimeoutRef = useRef<number | null>(null)
     const hideTimeoutRef = useRef<number | null>(null)
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const checkMobile = () => {
+            const isMobileDevice = window.innerWidth <= 768 ||
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            setIsMobile(isMobileDevice)
+        }
+
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
+
+    const shouldShowIndicator = useCallback(() => {
+        return !isMobile &&
+            !showInstructions &&
+            !showObjectModal &&
+            !isNavigating
+    }, [isMobile, showInstructions, showObjectModal, isNavigating])
 
     const startScrollIndicatorCycle = useCallback(() => {
+        if (!shouldShowIndicator()) return
+
         setShowScrollIndicator(true)
         hideTimeoutRef.current = window.setTimeout(() => {
             setIsIndicatorHiding(true)
             setTimeout(() => {
                 setShowScrollIndicator(false)
                 setIsIndicatorHiding(false)
+                // Наступна поява через 10 секунд
                 scrollTimeoutRef.current = window.setTimeout(() => {
-                    setShowScrollIndicator(true)
-                    hideTimeoutRef.current = window.setTimeout(() => {
-                        setIsIndicatorHiding(true)
-                        setTimeout(() => {
-                            setShowScrollIndicator(false)
-                            setIsIndicatorHiding(false)
-                            // Цикл повторюється
-                            scrollTimeoutRef.current = window.setTimeout(() => {
-                                setShowScrollIndicator(true)
-                                hideTimeoutRef.current = window.setTimeout(() => {
-                                    setIsIndicatorHiding(true)
-                                    setTimeout(() => {
-                                        setShowScrollIndicator(false)
-                                        setIsIndicatorHiding(false)
-                                    }, 400)
-                                }, 3000)
-                            }, 10000)
-                        }, 400)
-                    }, 3000)
+                    if (shouldShowIndicator()) {
+                        setShowScrollIndicator(true)
+                        hideTimeoutRef.current = window.setTimeout(() => {
+                            setIsIndicatorHiding(true)
+                            setTimeout(() => {
+                                setShowScrollIndicator(false)
+                                setIsIndicatorHiding(false)
+                                // Продовжуємо цикл
+                                scrollTimeoutRef.current = window.setTimeout(() => {
+                                    startScrollIndicatorCycle()
+                                }, 10000)
+                            }, 400)
+                        }, 3000)
+                    } else {
+                        // Якщо не можемо показати, спробуємо знову через 10 секунд
+                        scrollTimeoutRef.current = window.setTimeout(() => {
+                            startScrollIndicatorCycle()
+                        }, 10000)
+                    }
                 }, 10000)
             }, 400)
         }, 3000)
-    }, [])
+    }, [shouldShowIndicator])
 
     const resetScrollIndicator = useCallback(() => {
         if (showScrollIndicator) {
@@ -79,7 +103,7 @@ export function MainScene() {
         }
         scrollTimeoutRef.current = window.setTimeout(() => {
             startScrollIndicatorCycle()
-        }, 3000)
+        }, 10000)
     }, [showScrollIndicator, startScrollIndicatorCycle])
 
     useEffect(() => {
@@ -236,6 +260,18 @@ export function MainScene() {
         setHasShownInitialHelp(true)
     }, [])
 
+    useEffect(() => {
+        if (showInstructions || showObjectModal) {
+            if (showScrollIndicator) {
+                setIsIndicatorHiding(true)
+                setTimeout(() => {
+                    setShowScrollIndicator(false)
+                    setIsIndicatorHiding(false)
+                }, 400)
+            }
+        }
+    }, [showInstructions, showObjectModal, showScrollIndicator])
+
     const handleHelpClick = useCallback(() => {
         setShowInstructions(true)
     }, [])
@@ -247,7 +283,6 @@ export function MainScene() {
             setShowObjectModal(true)
         }
 
-        // Скидаємо індикатор при взаємодії з хайлайтами
         resetScrollIndicator()
     }, [resetScrollIndicator])
 
@@ -255,7 +290,6 @@ export function MainScene() {
         setShowObjectModal(false)
         setSelectedObject(null)
 
-        // Скидаємо індикатор при закритті модалок
         resetScrollIndicator()
     }, [resetScrollIndicator])
 
@@ -281,10 +315,9 @@ export function MainScene() {
         window.addEventListener('scroll', handleScroll)
         window.addEventListener('mousemove', handleGlobalMouseMove)
 
-        // Початковий таймер для показу індикатора через 3 секунди
         scrollTimeoutRef.current = window.setTimeout(() => {
             startScrollIndicatorCycle()
-        }, 3000)
+        }, 10000)
 
         return () => {
             window.removeEventListener('scroll', handleScroll)
@@ -345,7 +378,7 @@ export function MainScene() {
                 objectInfo={selectedObject}
             />
 
-            {showScrollIndicator && (
+            {showScrollIndicator && shouldShowIndicator() && (
                 <div
                     className={`scroll-indicator ${isIndicatorHiding ? 'hiding' : ''}`}
                     style={{

@@ -45,19 +45,7 @@ export function VideoHighlights({
     const containerRectRef = useRef<DOMRect | null>(null)
 
     useEffect(() => {
-        const savedPositions = highlightStorage.loadPositions()
-
-        if (savedPositions.length > 0) {
-            const updatedHighlights = defaultHighlights.map(highlight => {
-                const savedPosition = savedPositions.find(p => p.id === highlight.id)
-                return savedPosition
-                    ? { ...highlight, position: savedPosition.position }
-                    : highlight
-            })
-            setVideoHighlights(updatedHighlights)
-        } else {
-            setVideoHighlights(defaultHighlights)
-        }
+        setVideoHighlights(defaultHighlights)
     }, [defaultHighlights])
 
     const handleMouseDown = useCallback((e: React.MouseEvent, highlightId: string) => {

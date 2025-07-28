@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import './ButtonBase.css'
-import './HelpButton.css'
 
 interface HelpButtonProps {
     onClick?: () => void

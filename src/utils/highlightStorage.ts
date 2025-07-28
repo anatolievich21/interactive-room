@@ -63,5 +63,28 @@ export const highlightStorage = {
         } catch (error) {
             console.error('Failed to reset highlight positions:', error)
         }
+    },
+
+    saveCurrentPositionsAsDefault: (): void => {
+        try {
+            const positions = highlightStorage.loadPositions()
+            if (positions.length > 0) {
+                localStorage.setItem('video_highlights_default_positions', JSON.stringify(positions))
+            }
+        } catch (error) {
+            console.error('Failed to save default positions:', error)
+        }
+    },
+
+    getDefaultPositions: (): HighlightPosition[] => {
+        try {
+            const saved = localStorage.getItem('video_highlights_default_positions')
+            if (saved) {
+                return JSON.parse(saved)
+            }
+        } catch (error) {
+            console.error('Failed to load default positions:', error)
+        }
+        return []
     }
 } 
