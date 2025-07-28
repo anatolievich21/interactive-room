@@ -133,6 +133,7 @@ export function VideoHighlights({
             let isInRange = currentProgress >= highlight.highlightRange.start &&
                 currentProgress <= highlight.highlightRange.end
 
+            // При навігації показуємо тільки цільовий хайлайт
             if (isNavigating && navigationTarget !== null) {
                 const targetPoint = navigationPoints.find(point =>
                     Math.abs(navigationTarget - point.scrollPosition) < 0.01
@@ -241,19 +242,44 @@ export function VideoHighlights({
                     delay: isNavigating ? 0.8 : 0
                 })
             } else if (!isInRange && highlightElement) {
-                gsap.to(highlightElement, {
-                    opacity: 0,
-                    scale: 0.5,
-                    rotation: 10,
-                    duration: 0.4,
-                    ease: 'power2.in',
-                    onComplete: () => {
-                        if (highlightElement && highlightElement.parentNode) {
-                            highlightElement.parentNode.removeChild(highlightElement)
-                            highlightsMap.current.delete(highlight.id)
-                        }
+                // При навігації приховуємо всі хайлайти крім цільового
+                if (isNavigating && navigationTarget !== null) {
+                    const targetPoint = navigationPoints.find(point =>
+                        Math.abs(navigationTarget - point.scrollPosition) < 0.01
+                    )
+                    const isTarget = targetPoint?.id === highlight.id
+
+                    if (!isTarget) {
+                        gsap.to(highlightElement, {
+                            opacity: 0,
+                            scale: 0.5,
+                            rotation: 10,
+                            duration: 0.3,
+                            ease: 'power2.in',
+                            onComplete: () => {
+                                if (highlightElement && highlightElement.parentNode) {
+                                    highlightElement.parentNode.removeChild(highlightElement)
+                                    highlightsMap.current.delete(highlight.id)
+                                }
+                            }
+                        })
                     }
-                })
+                } else if (!isNavigating) {
+                    // Звичайне видалення коли не навігуємо
+                    gsap.to(highlightElement, {
+                        opacity: 0,
+                        scale: 0.5,
+                        rotation: 10,
+                        duration: 0.4,
+                        ease: 'power2.in',
+                        onComplete: () => {
+                            if (highlightElement && highlightElement.parentNode) {
+                                highlightElement.parentNode.removeChild(highlightElement)
+                                highlightsMap.current.delete(highlight.id)
+                            }
+                        }
+                    })
+                }
             }
         })
     }, [currentProgress, isEditMode, videoHighlights, onObjectClick, handleMouseDown, isNavigating, navigationTarget, navigationPoints])

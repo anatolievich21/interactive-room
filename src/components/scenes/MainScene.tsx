@@ -230,10 +230,11 @@ export function MainScene() {
     }, [isMouseInside, handleMouseMove])
 
     const handleNavigate = useCallback((scrollPosition: number) => {
-        if (isNavigating) return
-
         const container = containerRef.current
         if (!container) return
+
+        // Якщо вже навігуємо до цієї позиції, не робимо нічого
+        if (isNavigating && navigationTarget === scrollPosition) return
 
         setIsNavigating(true)
         setNavigationTarget(scrollPosition)
@@ -249,11 +250,12 @@ export function MainScene() {
             behavior: 'smooth'
         })
 
+        // Збільшуємо час до 2 секунд щоб хайлайт встиг з'явитися
         setTimeout(() => {
             setIsNavigating(false)
             setNavigationTarget(null)
-        }, 800)
-    }, [isNavigating])
+        }, 2000)
+    }, [isNavigating, navigationTarget])
 
     const handleInstructionsClose = useCallback(() => {
         setShowInstructions(false)
